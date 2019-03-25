@@ -74,4 +74,46 @@ public struct User: Codable, OneRosterBase {
     
     /// For example: Xwyz//123
     public var password: String?
+
+    /// Create a new User
+    public init(sourcedId: String,
+                status: Status,
+                dateLastModified: Date,
+                metadata: [String: String],
+                username: String,
+                userIds: [UserId],
+                enabledUser: Bool,
+                givenName: String,
+                familyName: String,
+                middleName: String?,
+                role: Role,
+                identifier: String?,
+                email: String?,
+                sms: String?,
+                phone: String?,
+                agents: [String],
+                orgs: [String],
+                grades: [Grade],
+                password: String?)
+    {
+        self.sourcedId = sourcedId
+        self.status = status
+        self.dateLastModified = dateLastModified
+        self.metadata = metadata
+        self.username = username
+        self.userIds = userIds
+        self.enabledUser = enabledUser
+        self.givenName = givenName
+        self.familyName = familyName
+        self.middleName = middleName
+        self.role = role
+        self.identifier = identifier
+        self.email = email
+        self.sms = sms
+        self.phone = phone
+        self.agents = agents
+        self.orgs = orgs
+        self.grades = grades
+        self.password = password
+    }
 }
