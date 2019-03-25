@@ -30,7 +30,7 @@ public struct User: Codable, OneRosterBase {
     public var dateLastModified: Date
     
     /// See `OneRosterBase.metadata`
-    public var metadata: [String: String]
+    public var metadata: [String: String]?
     
     /// For example: pjn@imsglobal.org
     public var username: String
