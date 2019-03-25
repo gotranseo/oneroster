@@ -2,7 +2,7 @@
 //  GUIDType.swift
 //  OneRoster
 //
-//  Created by Jimmy McDermott on 3/25/19.
+//  Copyright Slate Solutions, Inc 2019.
 //
 
 import Foundation

@@ -1,3 +1,10 @@
+//
+//  User.swift
+//  OneRoster
+//
+//  Copyright Slate Solutions, Inc 2019.
+//
+
 import Foundation
 
 /// Users, Teachers and Students are human beings that are teaching or studying in a class respectively.
