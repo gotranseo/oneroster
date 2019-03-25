@@ -58,7 +58,7 @@ public struct DemographicData: Codable, OneRosterBase {
     public var hispanicOrLatinoEthnicity: Bool?
     
     /// Vocabulary - https://ceds.ed.gov/CEDSElementDetails.aspx?TermxTopicId=20002
-    public var countryOfBirthCode: CountryCode?
+    public var countryOfBirthCode: String?
     
     /// Vocabulary - https://ceds.ed.gov/CEDSElementDetails.aspx?TermxTopicId=20837
     public var stateOfBirthAbbreviation: StateCode?
@@ -83,7 +83,7 @@ public struct DemographicData: Codable, OneRosterBase {
                 white: Bool?,
                 demographicRaceTwoOrMoreRaces: Bool?,
                 hispanicOrLatinoEthnicity: Bool?,
-                countryOfBirthCode: CountryCode?,
+                countryOfBirthCode: String?,
                 stateOfBirthAbbreviation: StateCode?,
                 cityOfBirth: String?,
                 publicSchoolResidenceStatus: ResidenceStatus?)
