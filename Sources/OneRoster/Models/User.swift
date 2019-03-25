@@ -63,11 +63,11 @@ public struct User: Codable, OneRosterBase {
     public var phone: String?
     
     /// Links to other people i.e. a User `sourcedId`
-    public var agents: [String]
+    public var agents: [GUIDRef]
     
     /// Links to orgs. In most cases, this is a single link to a school, but could be to a district or national
     /// org. People might also be linked to multiple organizations.
-    public var orgs: [String]
+    public var orgs: [GUIDRef]
     
     /// Grade(s) for which a user with role 'student' is enrolled.
     public var grades: [Grade]
