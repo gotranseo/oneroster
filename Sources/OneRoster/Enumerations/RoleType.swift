@@ -1,5 +1,5 @@
 //
-//  Role.swift
+//  RoleType.swift
 //  OneRoster
 //
 //  Created by Jimmy McDermott on 3/24/19.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents an access level for a `User`
-public enum Role: String, Codable {
+public enum RoleType: String, Codable {
     /// Administrator in the organization (e.g. School).
     case administrator
     

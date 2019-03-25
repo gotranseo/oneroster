@@ -13,7 +13,7 @@ public protocol OneRosterBase {
     var sourcedId: String { get set }
     
     /// See subsection 4.13.8 for the enumeration list.
-    var status: Status { get set }
+    var status: StatusType { get set }
     
     /// For example: 2012-04-23T18:25:43.511Z
     var dateLastModified: Date { get set }

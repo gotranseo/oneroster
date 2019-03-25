@@ -17,7 +17,7 @@ public struct User: Codable, OneRosterBase {
     public var sourcedId: String
     
     /// See `OneRosterBase.status`
-    public var status: Status
+    public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
     public var dateLastModified: Date
@@ -48,7 +48,7 @@ public struct User: Codable, OneRosterBase {
     public var middleName: String?
     
     /// See subsection 4.13.6 for the enumeration list.
-    public var role: Role
+    public var role: RoleType
     
     /// For example: 9898-PJN
     public var identifier: String?
@@ -77,7 +77,7 @@ public struct User: Codable, OneRosterBase {
 
     /// Create a new User
     public init(sourcedId: String,
-                status: Status,
+                status: StatusType,
                 dateLastModified: Date,
                 metadata: [String: String],
                 username: String,
@@ -86,13 +86,13 @@ public struct User: Codable, OneRosterBase {
                 givenName: String,
                 familyName: String,
                 middleName: String?,
-                role: Role,
+                role: RoleType,
                 identifier: String?,
                 email: String?,
                 sms: String?,
                 phone: String?,
-                agents: [String],
-                orgs: [String],
+                agents: [GUIDRef],
+                orgs: [GUIDRef],
                 grades: [Grade],
                 password: String?)
     {

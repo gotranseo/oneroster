@@ -1,5 +1,5 @@
 //
-//  Status.swift
+//  StatusType.swift
 //  OneRoster
 //
 //  Created by Jimmy McDermott on 3/24/19.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents the current status for the user
-public enum Status: String, Codable {
+public enum StatusType: String, Codable {
     /// Currently Active
     case active
     
