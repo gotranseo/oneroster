@@ -41,7 +41,7 @@ public struct Course: Codable, OneRosterBase {
     public var subjects: [String]?
     
     /// This is a machine readable set of codes and the number should match the associated 'subjects' attribute.
-    public var subjectCodes: [SubjectCode]?
+    public var subjectCodes: [String]?
     
     /// Link to resources if applicable i.e. the 'sourcedIds'.
     public var resources: [GUIDRef]?
@@ -56,7 +56,7 @@ public struct Course: Codable, OneRosterBase {
                 courseCode: String?,
                 grades: [Grade]?,
                 subjects: [String]?,
-                subjectCodes: [SubjectCode]?,
+                subjectCodes: [String]?,
                 resources: [GUIDRef]?)
     {
         self.sourcedId = sourcedId

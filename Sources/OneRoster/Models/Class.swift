@@ -48,7 +48,7 @@ public struct Class: Codable, OneRosterBase {
     public var terms: [GUIDRef]
     
     /// This is a machine readable set of codes and the number should match the associated 'subjects' attribute.
-    public var subjectCodes: [SubjectCode]?
+    public var subjectCodes: [String]?
     
     /// The time slots in the day that the class will be given. Examples: 1 or an array of 1, 3, 5, etc.
     public var periods: [String]?
@@ -69,7 +69,7 @@ public struct Class: Codable, OneRosterBase {
                 course: GUIDRef,
                 school: GUIDRef,
                 terms: [GUIDRef],
-                subjectCodes: [SubjectCode]?,
+                subjectCodes: [String]?,
                 periods: [String]?,
                 resources: [GUIDRef]?)
     {
