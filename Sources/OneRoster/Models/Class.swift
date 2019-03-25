@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// A class is an instance of a course, onto which students and teachers are enrolled.
+/// A class is typically held within a term.
 public struct Class: Codable, OneRosterBase {
     /// See `OneRosterBase.sourceId`
     public var sourcedId: String
@@ -53,4 +55,38 @@ public struct Class: Codable, OneRosterBase {
     
     /// Link to resources i.e. the Resource 'sourcedId'.
     public var resources: [GUIDRef]?
+
+    /// Create a new `Class`
+    public init(sourcedId: String,
+                status: StatusType,
+                dateLastModified: Date,
+                metadata: [String: String]?,
+                title: String,
+                classCode: String?,
+                location: String?,
+                grades: [Grade]?,
+                subjects: [String]?,
+                course: GUIDRef,
+                school: GUIDRef,
+                terms: [GUIDRef],
+                subjectCodes: [SubjectCode]?,
+                periods: [String]?,
+                resources: [GUIDRef]?)
+    {
+        self.sourcedId = sourcedId
+        self.status = status
+        self.dateLastModified = dateLastModified
+        self.metadata = metadata
+        self.title = title
+        self.classCode = classCode
+        self.location = location
+        self.grades = grades
+        self.subjects = subjects
+        self.course = course
+        self.school = school
+        self.terms = terms
+        self.subjectCodes = subjectCodes
+        self.periods = periods
+        self.resources = resources
+    }
 }
