@@ -2,6 +2,10 @@
 
 A Vapor package for interacting with a OneRoster v1.1 JSON IMS API. 
 
+## What is OneRoster?
+
+OneRoster is a standard developed by IMS Global that specifies how technology providers can communicate with technology repositories of student data. It can be used to auto-populate products when a school subscribes, roster students, and pull grade/demographic information. We built this library to make it easier to interact with. 
+
 ## Installation 
 
 OneRoster is available through SPM. To install it, simply add the following to your Package.swift file:
