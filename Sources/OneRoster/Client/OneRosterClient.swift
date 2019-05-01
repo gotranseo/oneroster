@@ -90,17 +90,14 @@ public struct OneRosterClient: Service {
     public func requestSingle<C: OneRosterResponse>(baseUrl: String,
                                                     clientId: String,
                                                     clientSecret: String,
-                                                    endpoint: OneRosterAPI.Endpoint,
-                                                    limit: Int = 100,
-                                                    offset: Int = 0) throws -> Future<C>
+                                                    endpoint: OneRosterAPI.Endpoint) throws -> Future<C>
     {
-        
         let oauthData = try OAuth(clientId: clientId,
                                   clientSecret: clientSecret,
                                   baseUrl: baseUrl,
                                   endpoint: endpoint,
-                                  limit: limit,
-                                  offset: offset).generate()
+                                  limit: nil,
+                                  offset: nil).generate()
         
         let headers: HTTPHeaders = [
             "Authorization": oauthData.oauthHeaderString
