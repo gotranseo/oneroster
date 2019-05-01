@@ -16,7 +16,7 @@ struct OAuth {
     let limit: Int?
     let offset: Int?
     
-    func generate() throws -> OAuthData {
+    func generate(nonce: String? = nil, timestamp: Double? = nil) throws -> OAuthData {
         let url: String
         let parametersString: String?
         
@@ -41,9 +41,9 @@ struct OAuth {
         // Create the OAuth 1.0 signature
         let httpVerb = "GET"
         let oauthConsumerKey = clientId
-        let oauthNonce = UUID().uuidString
+        let oauthNonce = nonce ?? UUID().uuidString
         let oauthSignatureMethod = "HMAC-SHA256"
-        let oauthTimestamp = Date().timeIntervalSince1970
+        let oauthTimestamp = timestamp ?? Date().timeIntervalSince1970
         let oauthVersion = "1.0"
         
         let oauthSignatureComponent = "\(limit == nil ? "" : "limit=\(limit!)&")oauth_consumer_key=\(oauthConsumerKey)&oauth_nonce=\(oauthNonce)&oauth_signature_method=\(oauthSignatureMethod)&oauth_timestamp=\(oauthTimestamp)&oauth_version=\(oauthVersion)\(offset == nil ? "" : "&offset=\(offset!)")"
