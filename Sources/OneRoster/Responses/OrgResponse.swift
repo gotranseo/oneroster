@@ -8,8 +8,10 @@
 import Foundation
 
 /// See `Org`
-public struct OrgResponse: Codable {
+public struct OrgResponse: Codable, OneRosterResponse {
+    /// The inner data type
+    public typealias InnerType = Org
     
     /// The `Org` response
-    public let org: Org
+    public let org: InnerType
 }

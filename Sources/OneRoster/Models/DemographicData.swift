@@ -37,25 +37,25 @@ public struct DemographicData: Codable, OneRosterBase {
     public var sex: Gender?
     
     /// Boolean ("true" | "false")
-    public var americanIndianOrAlaskaNative: Bool?
+    public var americanIndianOrAlaskaNative: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var asian: Bool?
+    public var asian: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var blackOrAfricanAmerican: Bool?
+    public var blackOrAfricanAmerican: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var nativeHawaiianOrOtherPacificIslander: Bool?
+    public var nativeHawaiianOrOtherPacificIslander: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var white: Bool?
+    public var white: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var demographicRaceTwoOrMoreRaces: Bool?
+    public var demographicRaceTwoOrMoreRaces: StringBoolean?
     
     /// Boolean ("true" | "false")
-    public var hispanicOrLatinoEthnicity: Bool?
+    public var hispanicOrLatinoEthnicity: StringBoolean?
     
     /// Vocabulary - https://ceds.ed.gov/CEDSElementDetails.aspx?TermxTopicId=20002
     public var countryOfBirthCode: String?
@@ -76,13 +76,13 @@ public struct DemographicData: Codable, OneRosterBase {
                 metadata: [String: String]?,
                 birthDate: Date?,
                 sex: Gender?,
-                americanIndianOrAlaskaNative: Bool?,
-                asian: Bool?,
-                blackOrAfricanAmerican: Bool?,
-                nativeHawaiianOrOtherPacificIslander: Bool?,
-                white: Bool?,
-                demographicRaceTwoOrMoreRaces: Bool?,
-                hispanicOrLatinoEthnicity: Bool?,
+                americanIndianOrAlaskaNative: StringBoolean?,
+                asian: StringBoolean?,
+                blackOrAfricanAmerican: StringBoolean?,
+                nativeHawaiianOrOtherPacificIslander: StringBoolean?,
+                white: StringBoolean?,
+                demographicRaceTwoOrMoreRaces: StringBoolean?,
+                hispanicOrLatinoEthnicity: StringBoolean?,
                 countryOfBirthCode: String?,
                 stateOfBirthAbbreviation: StateCode?,
                 cityOfBirth: String?,

@@ -37,7 +37,7 @@ public struct Enrollment: Codable, OneRosterBase {
     
     /// Applicable only to teachers. Only one teacher should be designated as the primary teacher
     /// for a class in the period defined by the begin/end dates.
-    public var primary: Bool?
+    public var primary: StringBoolean?
     
     /// The start date for the enrollment (inclusive). This date must be within the period of the
     /// associated Academic Session for the class (Term/Semester/SchoolYear).
@@ -58,7 +58,7 @@ public struct Enrollment: Codable, OneRosterBase {
                 `class`: GUIDRef,
                 school: GUIDRef,
                 role: RoleType,
-                primary: Bool?,
+                primary: StringBoolean?,
                 beginDate: Date?,
                 endDate: Date?)
     {

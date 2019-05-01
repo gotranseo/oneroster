@@ -43,7 +43,7 @@ public struct User: Codable, OneRosterBase {
     /// 'false' denotes that the record is active but system access is curtailed
     /// according to the local administration rules. This field is used to determine
     /// whether or not the record is active in the local system.
-    public var enabledUser: Bool
+    public var enabledUser: StringBoolean
     
     /// For example: Phil
     public var givenName: String
@@ -89,7 +89,7 @@ public struct User: Codable, OneRosterBase {
                 metadata: [String: String],
                 username: String,
                 userIds: [UserId],
-                enabledUser: Bool,
+                enabledUser: StringBoolean,
                 givenName: String,
                 familyName: String,
                 middleName: String?,

@@ -8,8 +8,13 @@
 import Foundation
 
 /// See `Org`
-public struct SchoolsResponse: Codable {
+public struct SchoolsResponse: Codable, OneRosterResponse {
+    /// The inner data type
+    public typealias InnerType = Org
+    
+    /// The key for the data
+    public static var dataKey: DataKey? = \.orgs
     
     /// An array of `Org` responses
-    public let schools: [Org]
+    public let orgs: [InnerType]
 }

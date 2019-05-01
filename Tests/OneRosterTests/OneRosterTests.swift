@@ -1,12 +1,13 @@
 import XCTest
 @testable import OneRoster
+import Vapor
 
 final class OneRosterTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(OneRoster().text, "Hello, World!")
+    func testExample() throws {
+        let app = try Application()
+        let client = try app.make(Client.self)
+        
+
     }
 
     static var allTests = [

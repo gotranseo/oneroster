@@ -8,8 +8,13 @@
 import Foundation
 
 /// See `User`
-public struct TeachersForSchoolResponse: Codable {
+public struct TeachersForSchoolResponse: Codable, OneRosterResponse {
+    /// The inner data type
+    public typealias InnerType = User
+    
+    /// The key for the data
+    public static var dataKey: DataKey? = \.users
     
     /// An array of `User` responses
-    public let users: [User]
+    public let users: [InnerType]
 }

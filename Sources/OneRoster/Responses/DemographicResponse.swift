@@ -8,8 +8,10 @@
 import Foundation
 
 /// See `DemographicData`
-public struct DemographicResponse: Codable {
+public struct DemographicResponse: Codable, OneRosterResponse {
+    /// The inner data type
+    public typealias InnerType = DemographicData
     
     /// The `DemographicData` response
-    public let demographic: DemographicData
+    public let demographic: InnerType
 }
