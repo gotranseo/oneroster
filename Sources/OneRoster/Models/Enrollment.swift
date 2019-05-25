@@ -18,7 +18,7 @@ public struct Enrollment: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -42,25 +42,25 @@ public struct Enrollment: Codable, OneRosterBase {
     /// The start date for the enrollment (inclusive). This date must be within the period of the
     /// associated Academic Session for the class (Term/Semester/SchoolYear).
     /// Example: 2012-04-23
-    public var beginDate: Date?
+    public var beginDate: String?
     
     /// The end date for the enrollment (exclusive). This date must be within the period of the
     /// associated Academic Session for the class (Term/Semester/SchoolYear).
     /// Example: 2013-03-31
-    public var endDate: Date?
+    public var endDate: String?
 
     /// Create a new Enrollment
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String]?,
                 user: GUIDRef,
                 `class`: GUIDRef,
                 school: GUIDRef,
                 role: RoleType,
                 primary: Bool?,
-                beginDate: Date?,
-                endDate: Date?)
+                beginDate: String?,
+                endDate: String?)
     {
         self.sourcedId = sourcedId
         self.status = status
@@ -79,14 +79,14 @@ public struct Enrollment: Codable, OneRosterBase {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         sourcedId = try values.decode(String.self, forKey: .sourcedId)
         status = try values.decode(StatusType.self, forKey: .status)
-        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
         user = try values.decode(GUIDRef.self, forKey: .user)
         `class` = try values.decode(GUIDRef.self, forKey: .class)
         school = try values.decode(GUIDRef.self, forKey: .school)
         role = try values.decode(RoleType.self, forKey: .role)
         primary = try values.stringBooleanIfPresent(key: .primary)
-        beginDate = try values.decodeIfPresent(Date.self, forKey: .beginDate)
-        endDate = try values.decodeIfPresent(Date.self, forKey: .endDate)
+        beginDate = try values.decodeIfPresent(String.self, forKey: .beginDate)
+        endDate = try values.decodeIfPresent(String.self, forKey: .endDate)
     }
 }

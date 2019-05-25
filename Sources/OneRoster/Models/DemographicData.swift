@@ -25,13 +25,13 @@ public struct DemographicData: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
     
     /// For example: 1908-04-01.
-    public var birthDate: Date?
+    public var birthDate: String?
     
     /// See subsection 4.13.2 or `Gender` for the enumeration list.
     public var sex: Gender?
@@ -72,9 +72,9 @@ public struct DemographicData: Codable, OneRosterBase {
     /// Create new DemographicData
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String]?,
-                birthDate: Date?,
+                birthDate: String?,
                 sex: Gender?,
                 americanIndianOrAlaskaNative: Bool?,
                 asian: Bool?,
@@ -112,9 +112,9 @@ public struct DemographicData: Codable, OneRosterBase {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         sourcedId = try values.decode(String.self, forKey: .sourcedId)
         status = try values.decode(StatusType.self, forKey: .status)
-        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
-        birthDate = try values.decodeIfPresent(Date.self, forKey: .birthDate)
+        birthDate = try values.decodeIfPresent(String.self, forKey: .birthDate)
         sex = try values.decodeIfPresent(Gender.self, forKey: .sex)
         americanIndianOrAlaskaNative = try values.stringBooleanIfPresent(key: .americanIndianOrAlaskaNative)
         asian = try values.stringBooleanIfPresent(key: .asian)

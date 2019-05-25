@@ -23,7 +23,7 @@ public struct AcademicSession: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -32,10 +32,10 @@ public struct AcademicSession: Codable, OneRosterBase {
     public var title: String
     
     /// For example: 2012-01-01
-    public var startDate: Date
+    public var startDate: String
     
     /// For example: 2012-04-30
-    public var endDate: Date
+    public var endDate: String
     
     /// See subsection 4.13.7 or `SessionType` for the enumeration list.
     public var type: SessionType
@@ -52,11 +52,11 @@ public struct AcademicSession: Codable, OneRosterBase {
     /// Creates a new AcademicSession
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String]?,
                 title: String,
-                startDate: Date,
-                endDate: Date,
+                startDate: String,
+                endDate: String,
                 type: SessionType,
                 parent: GUIDRef?,
                 children: [GUIDRef]?,

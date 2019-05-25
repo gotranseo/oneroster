@@ -20,7 +20,7 @@ public struct Course: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -49,7 +49,7 @@ public struct Course: Codable, OneRosterBase {
     /// Create a new `Course`
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String]?,
                 title: String,
                 schoolYear: GUIDRef?,

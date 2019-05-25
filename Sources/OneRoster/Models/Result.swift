@@ -17,7 +17,7 @@ public struct Result: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -35,7 +35,7 @@ public struct Result: Codable, OneRosterBase {
     public var score: Double
     
     /// For example: 2012-01-05
-    public var scoreDate: Date
+    public var scoreDate: String
     
     /// For example: excellent
     public var comment: String?

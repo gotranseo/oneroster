@@ -16,7 +16,7 @@ public protocol OneRosterBase {
     var status: StatusType { get set }
     
     /// For example: 2012-04-23T18:25:43.511Z
-    var dateLastModified: Date { get set }
+    var dateLastModified: String { get set }
     
     /// Extra metadata from the OneRoster response
     var metadata: [String: String]? { get set }

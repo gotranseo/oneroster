@@ -16,15 +16,6 @@ public struct OneRosterClient: Service {
         self.client = client
     }
     
-    func decoder() -> JSONDecoder {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.000'Z'"
-        let jsonDecoder = JSONDecoder()
-        jsonDecoder.dateDecodingStrategy = .formatted(dateFormatter)
-        
-        return jsonDecoder
-    }
-    
     public func requestMultiple<C: OneRosterResponse>(baseUrl: String,
                                                       clientId: String,
                                                       clientSecret: String,
@@ -47,7 +38,7 @@ public struct OneRosterClient: Service {
             "Authorization": oauthData.oauthHeaderString
         ]
         
-        let jsonDecoder = decoder()
+        let jsonDecoder = JSONDecoder()
         return client.get(url.absoluteString, headers: headers).flatMap { res in
             guard let data = res.http.body.data else { throw Abort(.internalServerError) }
             let totalEntityCount = Int(res.http.headers["x-total-count"].first ?? "") ?? 1
@@ -59,31 +50,35 @@ public struct OneRosterClient: Service {
                 pageCount += 1
             }
             
-            let entity = try jsonDecoder.decode(C.self, from: data)
-            guard var array = entity.oneRosterDataKey else {
-                throw Abort(.internalServerError, reason: "Wrong entity type to decode - no array found")
-            }
-            
-            if !bypassRecursion {
-                var futures = [Future<[C.InnerType]>]()
-                for i in 1...pageCount {
-                    let newOffset = i * limit
-                    futures.append(try self.requestMultiple(baseUrl: baseUrl,
-                                                            clientId: clientId,
-                                                            clientSecret: clientSecret,
-                                                            endpoint: endpoint,
-                                                            limit: limit,
-                                                            offset: newOffset,
-                                                            decoding: decoding,
-                                                            bypassRecursion: true))
+            if let error = try? jsonDecoder.decode(OneRosterError.self, from: data) {
+                throw Abort(.internalServerError, reason: "OneRoster Error: \(error.errors.map { $0.description }.joined() )")
+            } else {
+                let entity = try jsonDecoder.decode(C.self, from: data)
+                guard var array = entity.oneRosterDataKey else {
+                    throw Abort(.internalServerError, reason: "Wrong entity type to decode - no array found")
                 }
                 
-                return futures.flatten(on: self.client.container).map { new in
-                    array.append(contentsOf: new.flatMap { $0 })
-                    return array
+                if !bypassRecursion {
+                    var futures = [Future<[C.InnerType]>]()
+                    for i in 1...pageCount {
+                        let newOffset = i * limit
+                        futures.append(try self.requestMultiple(baseUrl: baseUrl,
+                                                                clientId: clientId,
+                                                                clientSecret: clientSecret,
+                                                                endpoint: endpoint,
+                                                                limit: limit,
+                                                                offset: newOffset,
+                                                                decoding: decoding,
+                                                                bypassRecursion: true))
+                    }
+                    
+                    return futures.flatten(on: self.client.container).map { new in
+                        array.append(contentsOf: new.flatMap { $0 })
+                        return array
+                    }
+                } else {
+                    return self.client.container.future(array)
                 }
-            } else {
-                return self.client.container.future(array)
             }
         }
     }
@@ -105,7 +100,7 @@ public struct OneRosterClient: Service {
             "Authorization": oauthData.oauthHeaderString
         ]
         
-        let jsonDecoder = decoder()
+        let jsonDecoder = JSONDecoder()
         return client.get(url.absoluteString, headers: headers).map { res in
             guard let data = res.http.body.data else { throw Abort(.internalServerError) }
             return try jsonDecoder.decode(C.self, from: data)

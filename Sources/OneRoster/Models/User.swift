@@ -27,7 +27,7 @@ public struct User: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -85,7 +85,7 @@ public struct User: Codable, OneRosterBase {
     /// Create a new User
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String],
                 username: String,
                 userIds: [UserId],
@@ -128,7 +128,7 @@ public struct User: Codable, OneRosterBase {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         sourcedId = try values.decode(String.self, forKey: .sourcedId)
         status = try values.decode(StatusType.self, forKey: .status)
-        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
         username = try values.decode(String.self, forKey: .username)
         userIds = try values.decode([UserId].self, forKey: .userIds)

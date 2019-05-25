@@ -19,7 +19,7 @@ public struct LineItem: Codable, OneRosterBase {
     public var status: StatusType
     
     /// See `OneRosterBase.dateLastModified`
-    public var dateLastModified: Date
+    public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
     public var metadata: [String: String]?
@@ -31,10 +31,10 @@ public struct LineItem: Codable, OneRosterBase {
     public var description: String?
     
     /// For example: 2012-01-01T18:25:43.511Z
-    public var assignDate: Date
+    public var assignDate: String
     
     /// For example: 2012-01-05T18:25:43.511Z
-    public var dueDate: Date
+    public var dueDate: String
     
     /// Link to class i.e. the class 'sourcedId'.
     public var `class`: GUIDRef
@@ -56,12 +56,12 @@ public struct LineItem: Codable, OneRosterBase {
     /// Create a new `LineItem`
     public init(sourcedId: String,
                 status: StatusType,
-                dateLastModified: Date,
+                dateLastModified: String,
                 metadata: [String: String]?,
                 title: String,
                 description: String?,
-                assignDate: Date,
-                dueDate: Date,
+                assignDate: String,
+                dueDate: String,
                 `class`: GUIDRef,
                 category: GUIDRef,
                 gradingPeriod: GUIDRef?,
