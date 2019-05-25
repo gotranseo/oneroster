@@ -37,25 +37,25 @@ public struct DemographicData: Codable, OneRosterBase {
     public var sex: Gender?
     
     /// Boolean ("true" | "false")
-    public var americanIndianOrAlaskaNative: StringBoolean?
+    public var americanIndianOrAlaskaNative: Bool?
     
     /// Boolean ("true" | "false")
-    public var asian: StringBoolean?
+    public var asian: Bool?
     
     /// Boolean ("true" | "false")
-    public var blackOrAfricanAmerican: StringBoolean?
+    public var blackOrAfricanAmerican: Bool?
     
     /// Boolean ("true" | "false")
-    public var nativeHawaiianOrOtherPacificIslander: StringBoolean?
+    public var nativeHawaiianOrOtherPacificIslander: Bool?
     
     /// Boolean ("true" | "false")
-    public var white: StringBoolean?
+    public var white: Bool?
     
     /// Boolean ("true" | "false")
-    public var demographicRaceTwoOrMoreRaces: StringBoolean?
+    public var demographicRaceTwoOrMoreRaces: Bool?
     
     /// Boolean ("true" | "false")
-    public var hispanicOrLatinoEthnicity: StringBoolean?
+    public var hispanicOrLatinoEthnicity: Bool?
     
     /// Vocabulary - https://ceds.ed.gov/CEDSElementDetails.aspx?TermxTopicId=20002
     public var countryOfBirthCode: String?
@@ -76,13 +76,13 @@ public struct DemographicData: Codable, OneRosterBase {
                 metadata: [String: String]?,
                 birthDate: Date?,
                 sex: Gender?,
-                americanIndianOrAlaskaNative: StringBoolean?,
-                asian: StringBoolean?,
-                blackOrAfricanAmerican: StringBoolean?,
-                nativeHawaiianOrOtherPacificIslander: StringBoolean?,
-                white: StringBoolean?,
-                demographicRaceTwoOrMoreRaces: StringBoolean?,
-                hispanicOrLatinoEthnicity: StringBoolean?,
+                americanIndianOrAlaskaNative: Bool?,
+                asian: Bool?,
+                blackOrAfricanAmerican: Bool?,
+                nativeHawaiianOrOtherPacificIslander: Bool?,
+                white: Bool?,
+                demographicRaceTwoOrMoreRaces: Bool?,
+                hispanicOrLatinoEthnicity: Bool?,
                 countryOfBirthCode: String?,
                 stateOfBirthAbbreviation: StateCode?,
                 cityOfBirth: String?,
@@ -107,4 +107,25 @@ public struct DemographicData: Codable, OneRosterBase {
         self.publicSchoolResidenceStatus = publicSchoolResidenceStatus
     }
     
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        sourcedId = try values.decode(String.self, forKey: .sourcedId)
+        status = try values.decode(StatusType.self, forKey: .status)
+        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
+        birthDate = try values.decodeIfPresent(Date.self, forKey: .birthDate)
+        sex = try values.decodeIfPresent(Gender.self, forKey: .sex)
+        americanIndianOrAlaskaNative = try values.stringBooleanIfPresent(key: .americanIndianOrAlaskaNative)
+        asian = try values.stringBooleanIfPresent(key: .asian)
+        blackOrAfricanAmerican = try values.stringBooleanIfPresent(key: .blackOrAfricanAmerican)
+        nativeHawaiianOrOtherPacificIslander = try values.stringBooleanIfPresent(key: .nativeHawaiianOrOtherPacificIslander)
+        white = try values.stringBooleanIfPresent(key: .white)
+        demographicRaceTwoOrMoreRaces = try values.stringBooleanIfPresent(key: .demographicRaceTwoOrMoreRaces)
+        hispanicOrLatinoEthnicity = try values.stringBooleanIfPresent(key: .hispanicOrLatinoEthnicity)
+        countryOfBirthCode = try values.decodeIfPresent(String.self, forKey: .countryOfBirthCode)
+        stateOfBirthAbbreviation = try values.decodeIfPresent(StateCode.self, forKey: .stateOfBirthAbbreviation)
+        cityOfBirth = try values.decodeIfPresent(String.self, forKey: .cityOfBirth)
+        publicSchoolResidenceStatus = try values.decodeIfPresent(ResidenceStatus.self, forKey: .publicSchoolResidenceStatus)
+    }
 }

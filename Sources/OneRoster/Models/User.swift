@@ -43,7 +43,7 @@ public struct User: Codable, OneRosterBase {
     /// 'false' denotes that the record is active but system access is curtailed
     /// according to the local administration rules. This field is used to determine
     /// whether or not the record is active in the local system.
-    public var enabledUser: StringBoolean
+    public var enabledUser: Bool
     
     /// For example: Phil
     public var givenName: String
@@ -89,7 +89,7 @@ public struct User: Codable, OneRosterBase {
                 metadata: [String: String],
                 username: String,
                 userIds: [UserId],
-                enabledUser: StringBoolean,
+                enabledUser: Bool,
                 givenName: String,
                 familyName: String,
                 middleName: String?,
@@ -122,5 +122,28 @@ public struct User: Codable, OneRosterBase {
         self.orgs = orgs
         self.grades = grades
         self.password = password
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        sourcedId = try values.decode(String.self, forKey: .sourcedId)
+        status = try values.decode(StatusType.self, forKey: .status)
+        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
+        username = try values.decode(String.self, forKey: .username)
+        userIds = try values.decode([UserId].self, forKey: .userIds)
+        enabledUser = try values.stringBoolean(forKey: .enabledUser)
+        givenName = try values.decode(String.self, forKey: .givenName)
+        familyName = try values.decode(String.self, forKey: .familyName)
+        middleName = try values.decodeIfPresent(String.self, forKey: .middleName)
+        role = try values.decode(RoleType.self, forKey: .role)
+        identifier = try values.decodeIfPresent(String.self, forKey: .identifier)
+        email = try values.decodeIfPresent(String.self, forKey: .email)
+        sms = try values.decodeIfPresent(String.self, forKey: .sms)
+        phone = try values.decodeIfPresent(String.self, forKey: .phone)
+        agents = try values.decode([GUIDRef].self, forKey: .agents)
+        orgs = try values.decode([GUIDRef].self, forKey: .orgs)
+        grades = try values.decode([Grade].self, forKey: .grades)
+        password = try values.decodeIfPresent(String.self, forKey: .password)
     }
 }

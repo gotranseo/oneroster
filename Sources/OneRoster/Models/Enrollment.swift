@@ -37,7 +37,7 @@ public struct Enrollment: Codable, OneRosterBase {
     
     /// Applicable only to teachers. Only one teacher should be designated as the primary teacher
     /// for a class in the period defined by the begin/end dates.
-    public var primary: StringBoolean?
+    public var primary: Bool?
     
     /// The start date for the enrollment (inclusive). This date must be within the period of the
     /// associated Academic Session for the class (Term/Semester/SchoolYear).
@@ -58,7 +58,7 @@ public struct Enrollment: Codable, OneRosterBase {
                 `class`: GUIDRef,
                 school: GUIDRef,
                 role: RoleType,
-                primary: StringBoolean?,
+                primary: Bool?,
                 beginDate: Date?,
                 endDate: Date?)
     {
@@ -73,5 +73,20 @@ public struct Enrollment: Codable, OneRosterBase {
         self.primary = primary
         self.beginDate = beginDate
         self.endDate = endDate
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        sourcedId = try values.decode(String.self, forKey: .sourcedId)
+        status = try values.decode(StatusType.self, forKey: .status)
+        dateLastModified = try values.decode(Date.self, forKey: .dateLastModified)
+        metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
+        user = try values.decode(GUIDRef.self, forKey: .user)
+        `class` = try values.decode(GUIDRef.self, forKey: .class)
+        school = try values.decode(GUIDRef.self, forKey: .school)
+        role = try values.decode(RoleType.self, forKey: .role)
+        primary = try values.stringBooleanIfPresent(key: .primary)
+        beginDate = try values.decodeIfPresent(Date.self, forKey: .beginDate)
+        endDate = try values.decodeIfPresent(Date.self, forKey: .endDate)
     }
 }
