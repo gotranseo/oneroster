@@ -35,19 +35,20 @@ public struct OneRosterClient: Service {
                                                       bypassRecursion: Bool = false) throws -> Future<[C.InnerType]>
     {
         
-        let oauthData = try OAuth(clientId: clientId,
-                                  clientSecret: clientSecret,
-                                  baseUrl: baseUrl,
-                                  endpoint: endpoint,
-                                  limit: limit,
-                                  offset: offset).generate()
+        guard let url = endpoint.fullUrl(baseUrl: baseUrl, limit: limit, offset: offset) else {
+            return client.container.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
+        }
+        
+        let oauthData = try OAuth(consumerKey: clientId,
+                                  consumerSecret: clientSecret,
+                                  url: url).generate()
         
         let headers: HTTPHeaders = [
             "Authorization": oauthData.oauthHeaderString
         ]
         
         let jsonDecoder = decoder()
-        return client.get(oauthData.fullUrl, headers: headers).flatMap { res in
+        return client.get(url.absoluteString, headers: headers).flatMap { res in
             guard let data = res.http.body.data else { throw Abort(.internalServerError) }
             let totalEntityCount = Int(res.http.headers["x-total-count"].first ?? "") ?? 1
             let pageCountDouble = Double(totalEntityCount) / Double(limit)
@@ -92,29 +93,22 @@ public struct OneRosterClient: Service {
                                                     clientSecret: String,
                                                     endpoint: OneRosterAPI.Endpoint) throws -> Future<C>
     {
-        let oauthData = try OAuth(clientId: clientId,
-                                  clientSecret: clientSecret,
-                                  baseUrl: baseUrl,
-                                  endpoint: endpoint,
-                                  limit: nil,
-                                  offset: nil).generate()
+        guard let url = endpoint.fullUrl(baseUrl: baseUrl) else {
+            return client.container.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
+        }
+        
+        let oauthData = try OAuth(consumerKey: clientId,
+                                  consumerSecret: clientSecret,
+                                  url: url).generate()
         
         let headers: HTTPHeaders = [
             "Authorization": oauthData.oauthHeaderString
         ]
         
         let jsonDecoder = decoder()
-        return client.get(oauthData.fullUrl, headers: headers).map { res in
+        return client.get(url.absoluteString, headers: headers).map { res in
             guard let data = res.http.body.data else { throw Abort(.internalServerError) }
             return try jsonDecoder.decode(C.self, from: data)
         }
-    }
-}
-
-extension String {
-    var cleanUrl: String {
-        return self.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)?
-            .replacingOccurrences(of: "&", with: "%26")
-            .replacingOccurrences(of: "=", with: "%3D") ?? ""
     }
 }
