@@ -141,9 +141,9 @@ public struct User: Codable, OneRosterBase {
         email = try values.decodeIfPresent(String.self, forKey: .email)
         sms = try values.decodeIfPresent(String.self, forKey: .sms)
         phone = try values.decodeIfPresent(String.self, forKey: .phone)
-        agents = try values.decode([GUIDRef].self, forKey: .agents)
-        orgs = try values.decode([GUIDRef].self, forKey: .orgs)
-        grades = try values.decode([Grade].self, forKey: .grades)
+        agents = try values.decodeIfPresent([GUIDRef].self, forKey: .agents) ?? []
+        orgs = try values.decodeIfPresent([GUIDRef].self, forKey: .orgs) ?? []
+        grades = try values.decodeIfPresent([Grade].self, forKey: .grades) ?? []
         password = try values.decodeIfPresent(String.self, forKey: .password)
     }
 }
