@@ -143,7 +143,7 @@ public struct User: Codable, OneRosterBase {
         phone = try values.decodeIfPresent(String.self, forKey: .phone)
         agents = try values.decodeIfPresent([GUIDRef].self, forKey: .agents) ?? []
         orgs = try values.decodeIfPresent([GUIDRef].self, forKey: .orgs) ?? []
-        grades = try values.decodeIfPresent([Grade].self, forKey: .grades) ?? []
+        grades = (try? values.decodeIfPresent([Grade].self, forKey: .grades) ?? []) ?? []
         password = try values.decodeIfPresent(String.self, forKey: .password)
     }
 }
