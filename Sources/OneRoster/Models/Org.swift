@@ -70,4 +70,17 @@ public struct Org: Codable, OneRosterBase {
         self.parent = parent
         self.children = children
     }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        sourcedId = try values.decode(String.self, forKey: .sourcedId)
+        status = try values.decode(StatusType.self, forKey: .status)
+        dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
+        metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
+        name = try values.decode(String.self, forKey: .name)
+        type = try values.decode(OrgType.self, forKey: .type)
+        identifier = try values.decodeIfPresent(String.self, forKey: .identifier)
+        parent = (try? values.decodeIfPresent(GUIDRef.self, forKey: .parent)) ?? nil
+        children = (try? values.decodeIfPresent([GUIDRef].self, forKey: .children)) ?? nil
+    }
 }
