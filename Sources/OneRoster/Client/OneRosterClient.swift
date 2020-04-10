@@ -9,9 +9,9 @@ import Foundation
 import Crypto
 import Vapor
 
-public struct OneRosterClient: Service {
+public struct OneRosterClient {
     public let client: Client
-
+    
     public init(client: Client) {
         self.client = client
     }
@@ -23,25 +23,25 @@ public struct OneRosterClient: Service {
                                                       limit: Int = 100,
                                                       offset: Int = 0,
                                                       decoding: C.Type,
-                                                      bypassRecursion: Bool = false) throws -> Future<[C.InnerType]>
+                                                      bypassRecursion: Bool = false) -> EventLoopFuture<[C.InnerType]>
     {
-        
         guard let url = endpoint.fullUrl(baseUrl: baseUrl, limit: limit, offset: offset) else {
-            return client.container.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
+            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
         }
         
-        let oauthData = try OAuth(consumerKey: clientId,
-                                  consumerSecret: clientSecret,
-                                  url: url).generate()
+        guard let oauthData = try? OAuth(consumerKey: clientId, consumerSecret: clientSecret, url: url).generate() else {
+            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot get OAuth Data"))
+        }
         
         let headers: HTTPHeaders = [
             "Authorization": oauthData.oauthHeaderString
         ]
         
         let jsonDecoder = JSONDecoder()
-        return client.get(url.absoluteString, headers: headers).flatMap { res in
-            guard let data = res.http.body.data else { throw Abort(.internalServerError) }
-            let totalEntityCount = Int(res.http.headers["x-total-count"].first ?? "") ?? 1
+        return client.get(URI(string: url.absoluteString), headers: headers) { _ in }.flatMap { res -> EventLoopFuture<[C.InnerType]> in
+            guard let body = res.body else { return self.client.eventLoop.future(error: Abort(.internalServerError)) }
+            let data = Data(body.readableBytesView)
+            let totalEntityCount = Int(res.headers["x-total-count"].first ?? "") ?? 1
             let pageCountDouble = Double(totalEntityCount) / Double(limit)
             let pageCountInt = totalEntityCount / limit
             var pageCount = pageCountInt
@@ -51,33 +51,45 @@ public struct OneRosterClient: Service {
             }
             
             if let error = try? jsonDecoder.decode(OneRosterError.self, from: data) {
-                throw Abort(.internalServerError, reason: "OneRoster Error: \(error.errors.map { $0.description }.joined() )")
+                return self
+                    .client
+                    .eventLoop
+                    .future(error: Abort(.internalServerError, reason: "OneRoster Error: \(error.errors.map { $0.description }.joined() )"))
             } else {
-                let entity = try jsonDecoder.decode(C.self, from: data)
+                guard let entity = try? jsonDecoder.decode(C.self, from: data) else {
+                    return self
+                        .client
+                        .eventLoop
+                        .future(error: Abort(.internalServerError, reason: "Cannot decode data"))
+                }
+                
                 guard var array = entity.oneRosterDataKey else {
-                    throw Abort(.internalServerError, reason: "Wrong entity type to decode - no array found")
+                    return self
+                        .client
+                        .eventLoop
+                        .future(error: Abort(.internalServerError, reason: "Wrong entity type to decode - no array found"))
                 }
                 
                 if !bypassRecursion {
-                    var futures = [Future<[C.InnerType]>]()
+                    var futures = [EventLoopFuture<[C.InnerType]>]()
                     for i in 1...pageCount {
                         let newOffset = i * limit
-                        futures.append(try self.requestMultiple(baseUrl: baseUrl,
-                                                                clientId: clientId,
-                                                                clientSecret: clientSecret,
-                                                                endpoint: endpoint,
-                                                                limit: limit,
-                                                                offset: newOffset,
-                                                                decoding: decoding,
-                                                                bypassRecursion: true))
+                        futures.append(self.requestMultiple(baseUrl: baseUrl,
+                                                            clientId: clientId,
+                                                            clientSecret: clientSecret,
+                                                            endpoint: endpoint,
+                                                            limit: limit,
+                                                            offset: newOffset,
+                                                            decoding: decoding,
+                                                            bypassRecursion: true))
                     }
                     
-                    return futures.flatten(on: self.client.container).map { new in
+                    return futures.flatten(on: self.client.eventLoop).map { new in
                         array.append(contentsOf: new.flatMap { $0 })
                         return array
                     }
                 } else {
-                    return self.client.container.future(array)
+                    return self.client.eventLoop.future(array)
                 }
             }
         }
@@ -86,23 +98,24 @@ public struct OneRosterClient: Service {
     public func requestSingle<C: OneRosterResponse>(baseUrl: String,
                                                     clientId: String,
                                                     clientSecret: String,
-                                                    endpoint: OneRosterAPI.Endpoint) throws -> Future<C>
+                                                    endpoint: OneRosterAPI.Endpoint) throws -> EventLoopFuture<C>
     {
         guard let url = endpoint.fullUrl(baseUrl: baseUrl) else {
-            return client.container.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
+            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
         }
         
-        let oauthData = try OAuth(consumerKey: clientId,
-                                  consumerSecret: clientSecret,
-                                  url: url).generate()
+        guard let oauthData = try? OAuth(consumerKey: clientId, consumerSecret: clientSecret, url: url).generate() else {
+            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot get OAuth Data"))
+        }
         
         let headers: HTTPHeaders = [
             "Authorization": oauthData.oauthHeaderString
         ]
         
         let jsonDecoder = JSONDecoder()
-        return client.get(url.absoluteString, headers: headers).map { res in
-            guard let data = res.http.body.data else { throw Abort(.internalServerError) }
+        return client.get(URI(string: url.absoluteString), headers: headers) { _ in }.flatMapThrowing { res in
+            guard let body = res.body else { throw Abort(.internalServerError) }
+            let data = Data(body.readableBytesView)
             return try jsonDecoder.decode(C.self, from: data)
         }
     }
