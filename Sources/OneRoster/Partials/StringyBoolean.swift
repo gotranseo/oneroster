@@ -39,7 +39,7 @@ extension KeyedDecodingContainer where K: CodingKey {
         } else if let stringValue = try? self.decodeIfPresent(String.self, forKey: key) {
             // now check for string value
             
-            let lowercased = stringValue?.lowercased()
+            let lowercased = stringValue.lowercased()
             
             if lowercased == "t" || lowercased == "true" {
                 return true

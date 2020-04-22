@@ -25,7 +25,7 @@
 /// - Copyright: 2017
 
 import Foundation
-import Crypto
+import Vapor
 
 struct OAuth {
     let consumerKey: String
@@ -90,8 +90,8 @@ struct OAuth {
             .joined(separator: "&")
         
         /// [RFC-5849 Section 3.4.2](https://tools.ietf.org/html/rfc5849#section-3.4.2)
-        let binarySignature =  try HMAC.SHA256.authenticate(signatureBase, key: signingKey)
-        oAuthParameters["oauth_signature"] = binarySignature.base64EncodedString()
+        let binarySignature = HMAC<SHA256>.authenticationCode(for: Data(signatureBase.utf8), using: SymmetricKey(data: Data(signingKey.utf8)))
+        oAuthParameters["oauth_signature"] = Data(binarySignature).base64EncodedString()
         
         let signatureHeader = "OAuth " + oAuthParameters
             .map(tuplify)
@@ -99,7 +99,7 @@ struct OAuth {
             .map(toBrackyPairString)
             .joined(separator: ",")
         
-        return OAuthData(oauthHeaderString: signatureHeader, signature: binarySignature.base64EncodedString())
+        return OAuthData(oauthHeaderString: signatureHeader, signature: Data(binarySignature).base64EncodedString())
     }
     
     private func rfc3986encode(_ str: String) -> String {

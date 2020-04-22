@@ -1,24 +1,23 @@
-// swift-tools-version:4.2
-
+// swift-tools-version:5.2
 import PackageDescription
 
 let package = Package(
     name: "OneRoster",
+    platforms: [
+       .macOS(.v10_15)
+    ],
     products: [
-        .library(
-            name: "OneRoster",
-            targets: ["OneRoster"]),
+        .library(name: "OneRoster", targets: ["OneRoster"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/crypto.git", from: "3.3.3"),
-        .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0")
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0")
     ],
     targets: [
-        .target(
-            name: "OneRoster",
-            dependencies: ["Crypto", "Vapor"]),
-        .testTarget(
-            name: "OneRosterTests",
-            dependencies: ["OneRoster"]),
+        .target(name: "OneRoster", dependencies: [
+            .product(name: "Vapor", package: "vapor"),
+        ]),
+        .testTarget(name: "OneRosterTests", dependencies: [
+            .target(name: "OneRoster")
+        ])
     ]
 )
