@@ -170,9 +170,9 @@ extension URL {
 }
 
 extension OneRosterAPI.Endpoint {
-    func fullUrl(baseUrl: String, limit: Int? = nil, offset: Int? = nil) -> URL? {
+    func fullUrl(baseUrl: String, limit: Int? = nil, offset: Int? = nil, filterString: String? = nil) -> URL? {
         let url: String
-        let parametersString: String?
+        var parametersString: String? = nil
         
         if baseUrl.hasSuffix("/") {
             url = "\(baseUrl)\(self.endpoint)"
@@ -188,6 +188,12 @@ extension OneRosterAPI.Endpoint {
             parametersString = "?offset=\(offset)"
         } else {
             parametersString = nil
+        }
+
+        if let parameters = parametersString, let filterString = filterString {
+            parametersString = "\(parameters)&filter=\(filterString)"
+        } else if let filterString = filterString {
+            parametersString = "?filter=\(filterString)"
         }
         
         return URL(string: "\(url)\(parametersString ?? "")")

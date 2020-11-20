@@ -23,9 +23,10 @@ public struct OneRosterClient {
                                                       limit: Int = 100,
                                                       offset: Int = 0,
                                                       decoding: C.Type,
-                                                      bypassRecursion: Bool = false) -> EventLoopFuture<[C.InnerType]>
+                                                      bypassRecursion: Bool = false,
+                                                      filterString: String? = nil) -> EventLoopFuture<[C.InnerType]>
     {
-        guard let url = endpoint.fullUrl(baseUrl: baseUrl, limit: limit, offset: offset) else {
+        guard let url = endpoint.fullUrl(baseUrl: baseUrl, limit: limit, offset: offset, filterString: filterString) else {
             return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
         }
         
@@ -98,9 +99,10 @@ public struct OneRosterClient {
     public func requestSingle<C: OneRosterResponse>(baseUrl: String,
                                                     clientId: String,
                                                     clientSecret: String,
-                                                    endpoint: OneRosterAPI.Endpoint) throws -> EventLoopFuture<C>
+                                                    endpoint: OneRosterAPI.Endpoint,
+                                                    filterString: String? = nil) throws -> EventLoopFuture<C>
     {
-        guard let url = endpoint.fullUrl(baseUrl: baseUrl) else {
+        guard let url = endpoint.fullUrl(baseUrl: baseUrl, filterString: filterString) else {
             return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
         }
         
