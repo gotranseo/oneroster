@@ -56,7 +56,10 @@ public struct OneRosterAPI {
         
         /// Return the collection of teachers teaching at this school.
         case getTeachersForSchool(id: String)
-        
+
+        /// Return the collection of courses
+        case getAllCourses
+
         /// The endpoint for the resource
         public var endpoint: String {
             switch self {
@@ -76,6 +79,7 @@ public struct OneRosterAPI {
                 case .getUser(let id): return "users/\(id)"
                 case .getStudentsForSchool(let id): return "schools/\(id)/students"
                 case .getTeachersForSchool(let id): return "schools/\(id)/teachers"
+                case .getAllCourses: return "courses"
             }
         }
         
@@ -98,6 +102,7 @@ public struct OneRosterAPI {
                 case .getUser: return UserResponse.self
                 case .getStudentsForSchool: return StudentsForSchoolResponse.self
                 case .getTeachersForSchool: return TeachersForSchoolResponse.self
+                case .getAllCourses: return CoursesResponse.self
             }
         }
     }
