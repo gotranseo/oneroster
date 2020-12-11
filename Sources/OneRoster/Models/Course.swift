@@ -79,7 +79,7 @@ public struct Course: Codable, OneRosterBase {
         dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
         title = try values.decode(String.self, forKey: .title)
-        schoolYear = try values.decodeIfPresent(GUIDRef.self, forKey: .schoolYear)
+        schoolYear = (try? values.decodeIfPresent(GUIDRef.self, forKey: .schoolYear)) ?? nil
         courseCode = try values.decodeIfPresent(String.self, forKey: .courseCode)
         grades = (try? values.decodeIfPresent([Grade].self, forKey: .grades) ?? []) ?? []
         subjects = try values.decodeIfPresent([String].self, forKey: .subjects)
