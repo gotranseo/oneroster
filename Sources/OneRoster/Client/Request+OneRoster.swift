@@ -10,12 +10,12 @@ import Vapor
 
 extension Application {
     public var oneRoster: OneRosterClient {
-        return OneRosterClient(client: self.client)
+        return OneRosterClient(client: self.client, logger: logger)
     }
 }
 
 extension Request {
     public var oneRoster: OneRosterClient {
-        return OneRosterClient(client: self.client)
+        return OneRosterClient(client: self.client, logger: logger)
     }
 }

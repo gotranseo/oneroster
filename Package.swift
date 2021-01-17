@@ -10,11 +10,13 @@ let package = Package(
         .library(name: "OneRoster", targets: ["OneRoster"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0")
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(name: "OneRoster", dependencies: [
             .product(name: "Vapor", package: "vapor"),
+            .product(name: "Logging", package: "swift-log"),
         ]),
         .testTarget(name: "OneRosterTests", dependencies: [
             .target(name: "OneRoster")
