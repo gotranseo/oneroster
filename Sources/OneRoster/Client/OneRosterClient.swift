@@ -67,6 +67,11 @@ public struct OneRosterClient {
             self.logger.info("pageCountInt: \(pageCountInt)")
             self.logger.info("pageCount: \(pageCount)")
             
+            guard pageCount > 0 else {
+                self.logger.info("Ending early - page count is \(pageCount)")
+                return self.client.eventLoop.future([])
+            }
+            
             if let error = try? jsonDecoder.decode(OneRosterError.self, from: data) {
                 let errorString = "OneRoster Error: \(error.errors.map { $0.description }.joined() )"
                 self.logger.error("\(errorString)")
