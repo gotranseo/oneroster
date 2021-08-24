@@ -107,7 +107,6 @@ public struct DemographicData: Codable, OneRosterBase {
         self.publicSchoolResidenceStatus = publicSchoolResidenceStatus
     }
     
-    
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         sourcedId = try values.decode(String.self, forKey: .sourcedId)
@@ -116,13 +115,13 @@ public struct DemographicData: Codable, OneRosterBase {
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
         birthDate = try values.decodeIfPresent(String.self, forKey: .birthDate)
         sex = try values.decodeIfPresent(Gender.self, forKey: .sex)
-        americanIndianOrAlaskaNative = try values.stringBooleanIfPresent(key: .americanIndianOrAlaskaNative)
-        asian = try values.stringBooleanIfPresent(key: .asian)
-        blackOrAfricanAmerican = try values.stringBooleanIfPresent(key: .blackOrAfricanAmerican)
-        nativeHawaiianOrOtherPacificIslander = try values.stringBooleanIfPresent(key: .nativeHawaiianOrOtherPacificIslander)
-        white = try values.stringBooleanIfPresent(key: .white)
-        demographicRaceTwoOrMoreRaces = try values.stringBooleanIfPresent(key: .demographicRaceTwoOrMoreRaces)
-        hispanicOrLatinoEthnicity = try values.stringBooleanIfPresent(key: .hispanicOrLatinoEthnicity)
+        americanIndianOrAlaskaNative = values.stringBooleanIfPresent(key: .americanIndianOrAlaskaNative)
+        asian = values.stringBooleanIfPresent(key: .asian)
+        blackOrAfricanAmerican = values.stringBooleanIfPresent(key: .blackOrAfricanAmerican)
+        nativeHawaiianOrOtherPacificIslander = values.stringBooleanIfPresent(key: .nativeHawaiianOrOtherPacificIslander)
+        white = values.stringBooleanIfPresent(key: .white)
+        demographicRaceTwoOrMoreRaces = values.stringBooleanIfPresent(key: .demographicRaceTwoOrMoreRaces)
+        hispanicOrLatinoEthnicity = values.stringBooleanIfPresent(key: .hispanicOrLatinoEthnicity)
         countryOfBirthCode = try values.decodeIfPresent(String.self, forKey: .countryOfBirthCode)
         stateOfBirthAbbreviation = try values.decodeIfPresent(StateCode.self, forKey: .stateOfBirthAbbreviation)
         cityOfBirth = try values.decodeIfPresent(String.self, forKey: .cityOfBirth)

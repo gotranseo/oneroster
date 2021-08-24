@@ -85,7 +85,7 @@ public struct Enrollment: Codable, OneRosterBase {
         `class` = try values.decode(GUIDRef.self, forKey: .class)
         school = try values.decode(GUIDRef.self, forKey: .school)
         role = try values.decode(RoleType.self, forKey: .role)
-        primary = try values.stringBooleanIfPresent(key: .primary)
+        primary = values.stringBooleanIfPresent(key: .primary)
         beginDate = try values.decodeIfPresent(String.self, forKey: .beginDate)
         endDate = try values.decodeIfPresent(String.self, forKey: .endDate)
     }

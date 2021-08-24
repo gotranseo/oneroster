@@ -41,7 +41,7 @@ public struct Class: Codable, OneRosterBase {
     public var course: GUIDRef
     
     /// Link to school i.e. the School 'sourcedId'.
-    public var school: GUIDRef
+    public var school: GUIDRef?
     
     /// Links to terms or semesters (academicSession) i.e. the set of 'sourcedIds' for the terms within
     /// the associated school year.
@@ -88,5 +88,21 @@ public struct Class: Codable, OneRosterBase {
         self.subjectCodes = subjectCodes
         self.periods = periods
         self.resources = resources
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        sourcedId = try values.decode(String.self, forKey: .sourcedId)
+        status = try values.decode(StatusType.self, forKey: .status)
+        dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
+        metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
+        title = try values.decode(String.self, forKey: .title)
+        grades = (try? values.decodeIfPresent([Grade].self, forKey: .grades) ?? []) ?? []
+        subjects = try values.decodeIfPresent([String].self, forKey: .subjects)
+        subjectCodes = try values.decodeIfPresent([String].self, forKey: .subjectCodes)
+        resources = try values.decodeIfPresent([GUIDRef].self, forKey: .resources)
+        course = try values.decode(GUIDRef.self, forKey: .course)
+        school = try values.decodeIfPresent(GUIDRef.self, forKey: .school)
+        terms = (try? values.decodeIfPresent([GUIDRef].self, forKey: .terms) ?? []) ?? []
     }
 }
