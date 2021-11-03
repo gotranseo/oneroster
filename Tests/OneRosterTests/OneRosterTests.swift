@@ -1,3 +1,4 @@
+import Vapor
 import XCTest
 import XCTVapor
 @testable import OneRoster
@@ -33,10 +34,10 @@ final class OneRosterTests: XCTestCase {
         XCTAssertEqual(headerString, expectedHeaderString)
     }
     
-    func testSingleObjectRequest() async throws {
+    func testMultiObjectRequest() async throws {
         let app = Application(.testing)
         
-        app.get("ims", "oneroster", "v1p1", "orgs") { (req: Request) -> OrgsResponse in
+        app.get("ims", "oneroster", "v1p1", "orgs") { (req: Request) -> Response in
             let allOrgs: [OrgsResponse.InnerType] = [
                 .init(sourcedId: "1", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "A", type: .district, identifier: nil, parent: nil, children: nil),
                 .init(sourcedId: "2", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "B", type: .district, identifier: nil, parent: nil, children: nil),
@@ -46,8 +47,28 @@ final class OneRosterTests: XCTestCase {
             let limit: Int = req.query["limit"] ?? 100
             let offset: Int = req.query["offset"] ?? allOrgs.startIndex
             //let filter: String? = req.query["filter"]
+            let response = Response(status: .ok)
+            var links: [HTTPHeaders.Link] = []
+            var urlComponents = try XCTUnwrap(URLComponents(string: req.url.string))
             
-            return OrgsResponse(orgs: .init(allOrgs[(offset ..< (offset + limit)).clamped(to: allOrgs.startIndex ..< allOrgs.endIndex)]))
+            if allOrgs.indices.contains(offset + limit), offset + limit != allOrgs.indices.last, offset != allOrgs.startIndex,
+               let offsetItemIdx = urlComponents.queryItems?.firstIndex(where: { $0.name == "offset" })
+            {
+                urlComponents.queryItems?[offsetItemIdx] = .init(name: "offset", value: "\(offset + limit)")
+                links.append(.init(uri: urlComponents.url!.absoluteString, relation: .next, attributes: [:]))
+            }
+            if let offsetItemIdx = urlComponents.queryItems?.firstIndex(where: { $0.name == "offset" }) {
+                urlComponents.queryItems?[offsetItemIdx] = .init(name: "offset", value: "\(allOrgs.startIndex)")
+                links.append(.init(uri: urlComponents.url!.absoluteString, relation: .first, attributes: [:]))
+                urlComponents.queryItems?[offsetItemIdx] = .init(name: "offset", value: "\(Array(stride(from: allOrgs.startIndex, to: allOrgs.endIndex, by: limit)).last ?? allOrgs.startIndex)")
+                links.append(.init(uri: urlComponents.url!.absoluteString, relation: .last, attributes: [:]))
+            }
+            if !links.isEmpty {
+                response.headers.links = links
+            }
+            
+            try response.content.encode(OrgsResponse(orgs: .init(allOrgs[(offset ..< (offset + limit)).clamped(to: allOrgs.startIndex ..< allOrgs.endIndex)])), as: .json)
+            return response
         }
     }
 }
