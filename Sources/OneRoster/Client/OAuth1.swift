@@ -155,7 +155,7 @@ public enum OAuth1 {
             let sigkey = [self.parameters.clientSecret, self.parameters.userSecret ?? ""]
                 .map(\.rfc5849Encoded).joined(separator: "&")
             
-            oauthParams["oauth_signature"] = HMAC<SHA256>.authenticationCode(for: sigbase.utf8, using: .init(data: sigkey.utf8)).base64
+            oauthParams["oauth_signature"] = HMAC<SHA256>.authenticationCode(for: Data(sigbase.utf8), using: .init(data: sigkey.utf8)).base64
             
             // RFC 5849 § 3.5
             return oauthParams
@@ -167,9 +167,9 @@ public enum OAuth1 {
 }
 
 /// Something that is a sequence of contiguous bytes which can be compared to other like sequences.
-public protocol ContiguousComparableData: Comparable, ContiguousBytes, DataProtocol {}
+public protocol ContiguousComparableData: Comparable, ContiguousBytes, Collection {}
 
-extension ContiguousComparableData {
+extension ContiguousComparableData where Element == UInt8 {
     public static func ==(lhs: Self, rhs: Self) -> Bool { zip(lhs, rhs).allSatisfy { $0 == $1 } } // Can this optimize to `memcmp()`?
     
     public static func <(lhs: Self, rhs: Self) -> Bool {
