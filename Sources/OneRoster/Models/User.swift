@@ -131,7 +131,7 @@ public struct User: Codable, OneRosterBase {
         dateLastModified = try values.decode(String.self, forKey: .dateLastModified)
         metadata = try values.decodeIfPresent(Dictionary.self, forKey: .metadata)
         username = try values.decode(String.self, forKey: .username)
-        userIds = try values.decode([UserId].self, forKey: .userIds)
+        userIds = try values.decodeIfPresent([UserId].self, forKey: .userIds) ?? []
         enabledUser = try values.stringBoolean(forKey: .enabledUser)
         givenName = try values.decode(String.self, forKey: .givenName)
         familyName = try values.decode(String.self, forKey: .familyName)

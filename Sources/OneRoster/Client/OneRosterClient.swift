@@ -11,195 +11,178 @@ import Vapor
 import Logging
 
 public struct OneRosterClient {
+    public let baseUrl: URL
     public let client: Client
     public let logger: Logger
 
-    public enum AuthType {
-        case oauth1
-        case oauth2
-    }
-    
-    public init(client: Client, logger: Logger) {
+    public init(baseUrl: URL, client: Client, logger: Logger) {
+        self.baseUrl = baseUrl
         self.client = client
         self.logger = logger
     }
-
-    private func getOAuthKey(baseUrl: String,
-                             clientId: String,
-                             clientSecret: String) -> EventLoopFuture<String>
-    {
-        struct RequestContent: Content {
-            let grant_type: String
-            let scope: String
-
-            static var defaultContentType: HTTPMediaType = .urlEncodedForm
+    
+    /// To use OAuth, specify an `OAuth1.Client` or `OAuth2.Client` when creating the `OneRosterClient`.
+    public func request<T: OneRosterResponse>(
+        _ endpoint: OneRosterAPI.Endpoint, as type: T.Type = T.self, filter: String? = nil
+    ) async throws -> T {
+        self.logger.info("[OneRoster] Start request \(T.self) from \(self.baseUrl) @ \(endpoint.endpoint)")
+        
+        guard let fullUrl = endpoint.makeRequestUrl(from: self.baseUrl, filterString: filter) else {
+            self.logger.error("[OneRoster] Unable to generate request URL!") // this should really never happen
+            throw Abort(.internalServerError, reason: "Failed to generate OneRoster request URL")
         }
-
-        self.logger.info("Getting token")
-        let fullUrl = baseUrl.finished(with: "/") + "token"
-        return client.get(.init(string: fullUrl)) { req in
-            req.headers.basicAuthorization = .init(username: clientId, password: clientSecret)
-            try req.content.encode(RequestContent(grant_type: "client_credentials",
-                                              scope: "https://purl.imsglobal.org/spec/or/v1p1/scope/roster-core.readonly"), as: .urlEncodedForm)
-        }.flatMapThrowing { res -> String in
-            self.logger.info("Received token")
-            return try res.content.get(at: "access_token")
+        
+        let response = try await self.client.get(.init(string: fullUrl.absoluteString))
+        
+        guard response.status == .ok else {
+            throw OneRosterError(from: response)
         }
-    }
-
-    public func requestMultiple<C: OneRosterResponse>(baseUrl: String,
-                                                      clientId: String,
-                                                      clientSecret: String,
-                                                      endpoint: OneRosterAPI.Endpoint,
-                                                      limit: Int = 100,
-                                                      offset: Int = 0,
-                                                      decoding: C.Type,
-                                                      bypassRecursion: Bool = false,
-                                                      filterString: String? = nil,
-                                                      authType: AuthType = .oauth1,
-                                                      bearerToken: String? = nil) -> EventLoopFuture<[C.InnerType]>
-    {
-        self.logger.info("Starting requestMultiple function for \(baseUrl), limit: \(limit), offset: \(offset), endpoint: \(endpoint.endpoint)")
-        guard let url = endpoint.fullUrl(baseUrl: baseUrl, limit: limit, offset: offset, filterString: filterString) else {
-            self.logger.error("Cannot generate URL")
-            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
-        }
-
-        guard let oauthData = try? OAuth(consumerKey: clientId, consumerSecret: clientSecret, url: url).generate() else {
-            self.logger.error("Cannot get OAuth data")
-            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot get OAuth Data"))
-        }
-
-        let headersFuture: EventLoopFuture<HTTPHeaders> = authType == .oauth1
-        ? client.eventLoop.future(["Authorization": oauthData.oauthHeaderString])
-        : bearerToken != nil
-        ? client.eventLoop.future(["Authorization": "Bearer \(bearerToken ?? "")"])
-        : getOAuthKey(baseUrl: baseUrl, clientId: clientId, clientSecret: clientSecret).map {
-            ["Authorization": "Bearer \($0)"]
-        }
-
-        return headersFuture.flatMap { headers in
-            let bearerToken: String? = authType == .oauth1 ? nil : headers.first(name: "Authorization")?.replacingOccurrences(of: "Bearer ", with: "")
-            self.logger.info("Starting client.get call")
-            let jsonDecoder = JSONDecoder()
-            return client.get(URI(string: url.absoluteString), headers: headers) { _ in }.flatMap { res -> EventLoopFuture<[C.InnerType]> in
-                guard let body = res.body else {
-                    self.logger.error("Cannot get response data")
-                    return self.client.eventLoop.future(error: Abort(.internalServerError))
-                }
-
-                let data = Data(body.readableBytesView)
-                let totalEntityCount = Int(res.headers["x-total-count"].first ?? "") ?? 1
-                let pageCountDouble = Double(totalEntityCount) / Double(limit)
-                let pageCountInt = totalEntityCount / limit
-                var pageCount = pageCountInt
-
-                if pageCountDouble > Double(pageCountInt) {
-                    pageCount += 1
-                }
-
-                self.logger.info("totalEntityCount: \(totalEntityCount)")
-                self.logger.info("pageCountDouble: \(pageCountDouble)")
-                self.logger.info("pageCountInt: \(pageCountInt)")
-                self.logger.info("pageCount: \(pageCount)")
-
-                guard pageCount > 0 else {
-                    self.logger.info("Ending early - page count is \(pageCount)")
-                    return self.client.eventLoop.future([])
-                }
-
-                if let error = try? jsonDecoder.decode(OneRosterError.self, from: data) {
-                    let errorString = "OneRoster Error: \(error.errors.map { $0.description }.joined() )"
-                    self.logger.error("\(errorString)")
-                    return self
-                        .client
-                        .eventLoop
-                        .future(error: Abort(.internalServerError, reason: errorString))
-                } else {
-                    guard let entity = try? jsonDecoder.decode(C.self, from: data) else {
-                        self.logger.error("Cannot decode data")
-                        return self
-                            .client
-                            .eventLoop
-                            .future(error: Abort(.internalServerError, reason: "Cannot decode data"))
-                    }
-
-                    guard var array = entity.oneRosterDataKey else {
-                        self.logger.error("Wrong entity type to decode - no array found")
-                        return self
-                            .client
-                            .eventLoop
-                            .future(error: Abort(.internalServerError, reason: "Wrong entity type to decode - no array found"))
-                    }
-
-                    if !bypassRecursion {
-                        var futures = [EventLoopFuture<[C.InnerType]>]()
-                        for i in 1...pageCount {
-                            let newOffset = i * limit
-                            self.logger.info("Calling requestMultiple for newOffset: \(newOffset)")
-                            futures.append(self.requestMultiple(baseUrl: baseUrl,
-                                                                clientId: clientId,
-                                                                clientSecret: clientSecret,
-                                                                endpoint: endpoint,
-                                                                limit: limit,
-                                                                offset: newOffset,
-                                                                decoding: decoding,
-                                                                bypassRecursion: true,
-                                                                bearerToken: bearerToken))
-                        }
-
-                        return futures.flatten(on: self.client.eventLoop).map { new in
-                            self.logger.info("Done calling all futures")
-                            array.append(contentsOf: new.flatMap { $0 })
-                            return array
-                        }
-                    } else {
-                        self.logger.info("Returning array")
-                        return self.client.eventLoop.future(array)
-                    }
-                }
-            }.map { finalData in
-                self.logger.info("Final data returned: \(finalData.count)")
-                return finalData
-            }
-        }
+        
+        // response content type will be JSON, so the configured default JSON decoder will be used
+        return try response.content.decode(T.self)
     }
     
-    public func requestSingle<C: OneRosterResponse>(baseUrl: String,
-                                                    clientId: String,
-                                                    clientSecret: String,
-                                                    endpoint: OneRosterAPI.Endpoint,
-                                                    filterString: String? = nil,
-                                                    authType: AuthType = .oauth1) throws -> EventLoopFuture<C>
-    {
-        self.logger.info("Starting requestSingle function for \(baseUrl), endpoint: \(endpoint.endpoint)")
-        guard let url = endpoint.fullUrl(baseUrl: baseUrl, filterString: filterString) else {
-            self.logger.error("Cannot generate URL")
-            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot generate URL"))
-        }
+    public func request<T: OneRosterResponse>(
+        _ endpoint: OneRosterAPI.Endpoint, as type: T.Type = T.self,
+         offset: Int = 0, limit: Int = 100, filter: String? = nil
+    ) async throws -> [T.InnerType] {
+        precondition(T.dataKey != nil, "Multiple-item request must be for a type with a data key")
         
-        guard let oauthData = try? OAuth(consumerKey: clientId, consumerSecret: clientSecret, url: url).generate() else {
-            self.logger.error("Cannot get OAuth Data")
-            return client.eventLoop.future(error: Abort(.internalServerError, reason: "Cannot get OAuth Data"))
-        }
-
-        let headersFuture: EventLoopFuture<HTTPHeaders> = authType == .oauth1
-        ? client.eventLoop.future(["Authorization": oauthData.oauthHeaderString])
-        : getOAuthKey(baseUrl: baseUrl, clientId: clientId, clientSecret: clientSecret).map {
-            ["Authorization": "Bearer \($0)"]
-        }
+        self.logger.info("[OneRoster] Start request [\(T.InnerType.self)][\(offset)..<+\(limit)] from \(self.baseUrl) @ \(endpoint.endpoint)")
         
-        return headersFuture.flatMap { headers -> EventLoopFuture<C> in
-            let jsonDecoder = JSONDecoder()
-            return client.get(URI(string: url.absoluteString), headers: headers) { _ in }.flatMapThrowing { res in
-                guard let body = res.body else {
-                    self.logger.error("Cannot get data")
-                    throw Abort(.internalServerError)
+        // OneRoster implementations are not strictly required by the 1.1 spec to provide the `X-Total-Count` response
+        // header, nor next/last URLs in the `Link` header (per OneRoster 1.1 v2.0, § 3.4.1). For any given response, we
+        // try to determine whether or not we're done based on the following algorithm:
+        //
+        // 1. If the implementation provides a `rel="last"` link, and it matches the most recent request, assume we're
+        //    done.
+        // 2. Otherwise, if the implementation provides a `rel="next"` link, assume we're not done and use that as the
+        //    next request, _UNLESS_ the link matches the last request made, in which case assume we're done to avoid
+        //    accidental loops.
+        // 3. Otherwise, if the implementation returned zero results for the current request, assume we're done.
+        // 4. Otherwise, if the implementation provided an `X-Total-Count` header, and we've accumulated at least that
+        //    many results, adjusted for the offset of the first request made, assume we're done.
+        // 5. Otherwise, if we've made more than 10,000 requests as part of the current request series, assume we're
+        //    caught in a loop caused by faulty results from the implementation (such as sending rel="next" links which
+        //    actually point backwards) and return an error.
+        // 6. Otherwise, add the limit to the last offset and use the result as the current offset in the next request.
+        var results: [T.InnerType] = []
+        var currentOffset = offset
+        var nextUrl = endpoint.makeRequestUrl(from: self.baseUrl, limit: limit, offset: currentOffset, filterString: filter)
+        
+        for n in 0 ..< 10_000 {
+            guard let fullUrl = nextUrl else {
+                self.logger.error("[OneRoster] Unable to generate request URL!") // this should really never happen
+                throw Abort(.internalServerError, reason: "Failed to generate OneRoster request URL")
+            }
+            self.logger.info("[OneRoster] Starting request \(n + 1)...")
+            
+            let response = try await self.client.get(.init(string: fullUrl.absoluteString))
+            guard response.status == .ok else { throw OneRosterError(from: response) }
+            let currentResults = try response.content.decode(T.self).oneRosterDataKey! // already checked that the type has a dataKey
+            
+            results.append(contentsOf: currentResults)
+            
+            if n == 0, let totalCountHeader = response.headers.first(name: "x-total-count") {
+                self.logger.info("[OneRoster] Server reported a total count: \(totalCountHeader)")
+            }
+            
+            let links = Dictionary(grouping: (response.headers.links ?? []), by: { $0.relation })
+            
+            if let lastLink = links[.last]?.first, let lastUrl = URL(string: lastLink.uri, relativeTo: fullUrl),
+               let lastComponents = URLComponents(url: lastUrl, resolvingAgainstBaseURL: true),
+               let lastUrlCanonical = lastComponents.url, lastUrlCanonical == fullUrl
+            {
+                self.logger.debug("[OneRoster] \"last\" link matches current request, assuming done.")
+                return results
+            }
+            else if let nextLink = links[.next]?.first, let likelyNextUrl = URL(string: nextLink.uri, relativeTo: fullUrl),
+                    let nextComponents = URLComponents(url: likelyNextUrl, resolvingAgainstBaseURL: true)
+            {
+                if let nextUrlCanonical = nextComponents.url, nextUrlCanonical == fullUrl {
+                    // Looks like a repeat, bail.
+                    self.logger.warning("[OneRoster] Next URL from endpoint matches last request made, stopping here.")
+                    return results
                 }
-
-                let data = Data(body.readableBytesView)
-                return try jsonDecoder.decode(C.self, from: data)
+                if let nextOffsetString = nextComponents.queryItems?.first(where: { $0.name == "offset" })?.value,
+                   let nextOffset = Int(nextOffsetString)
+                {
+                    currentOffset = nextOffset
+                }
+                self.logger.debug("[OneRoster] Using provided \"next\" URL.")
+                nextUrl = likelyNextUrl
+            }
+            else if currentResults.isEmpty {
+                self.logger.debug("[OneRoster] No results returned and no \"next\" link provided, assuming done.")
+                return results
+            }
+            else if let totalCountHeader = response.headers.first(name: "x-total-count"),
+                    let totalCount = Int(totalCountHeader),
+                    (results.count + offset) >= totalCount
+            {
+                self.logger.debug("[OneRoster] Current adjusted total \(results.count) + \(offset) >= reported total \(totalCount), assuming done.")
+                return results
+            }
+            else
+            {
+                self.logger.debug("[OneRoster] Preparing for next request by manually adding limit to offset.")
+                currentOffset += limit
+                nextUrl = endpoint.makeRequestUrl(from: self.baseUrl, limit: limit, offset: currentOffset, filterString: filter)
             }
         }
+        self.logger.error("[OneRoster] Made 10,000 requests and still haven't finished! We're probably caught in a loop.")
+        throw Abort(.internalServerError, reason: "OneRoster request loop failed to terminate")
+    }
+}
+
+extension URLComponents {
+    /// Add a `URLQueryItem` with the given name and value to the `queryItems` component.
+    ///
+    /// The `queryItems` array is created if it is currently `nil`.
+    public mutating func appendQueryItem(name: String, value: String? = nil) {
+        self.queryItems = (self.queryItems ?? []) + [.init(name: name, value: value)]
+    }
+
+    /// Add a `URLQueryItem` with the given percent-encoded name and value to the `percentEncodedQueryItems` component.
+    ///
+    /// The `percentEncodedQueryItems` array is created if it is currently `nil`.
+    public mutating func appendPercentEncodedQueryItem(name: String, value: String? = nil) {
+        self.percentEncodedQueryItems = (self.percentEncodedQueryItems ?? []) + [.init(name: name, value: value)]
+    }
+}
+
+extension OneRosterAPI.Endpoint {
+    func makeRequestUrl(from baseUrl: URL, limit: Int? = nil, offset: Int? = nil, filterString: String? = nil) -> URL? {
+        guard var components = URLComponents(url: baseUrl, resolvingAgainstBaseURL: true) else {
+            return nil
+        }
+
+        // Setting `URLComponents.queryItems` to an empty array results in a URL with a `?` appended to it even
+        // if there are never any query items added to the array, e.g. `https://localhost/?`. This is not really
+        // canonical form (although by RFC the `?` by itself has no semantic effect), so we use the helpers
+        // instead to ensure an array is only set when needed.
+        
+        if let limit = limit {
+            components.appendQueryItem(name: "limit", value: "\(limit)")
+        }
+        if let offset = offset {
+            components.appendQueryItem(name: "offset", value: "\(offset)")
+        }
+        if let filterString = filterString {
+            components.appendPercentEncodedQueryItem(name: "filter", value: "\(filterString)")
+        }
+        
+        guard var paramUrl = components.url else {
+            return nil
+        }
+        
+        if paramUrl.pathComponents.suffix(3) != ["ims", "oneroster", "v1p1"] {
+            paramUrl.appendPathComponent("ims", isDirectory: true)
+            paramUrl.appendPathComponent("oneroster", isDirectory: true)
+            paramUrl.appendPathComponent("v1p1", isDirectory: true)
+        }
+        paramUrl.appendPathComponent(self.endpoint, isDirectory: false)
+        
+        return paramUrl
     }
 }
