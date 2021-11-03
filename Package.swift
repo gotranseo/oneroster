@@ -10,7 +10,7 @@ let package = Package(
         .library(name: "OneRoster", targets: ["OneRoster"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.51.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.52.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
