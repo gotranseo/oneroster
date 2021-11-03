@@ -37,6 +37,7 @@ final class OneRosterTests: XCTestCase {
     func testMultiObjectRequest() async throws {
         let app = Application(.testing)
         
+        defer { app.shutdown() }
         app.get("ims", "oneroster", "v1p1", "orgs") { (req: Request) -> Response in
             let allOrgs: [OrgsResponse.InnerType] = [
                 .init(sourcedId: "1", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "A", type: .district, identifier: nil, parent: nil, children: nil),
@@ -70,6 +71,12 @@ final class OneRosterTests: XCTestCase {
             try response.content.encode(OrgsResponse(orgs: .init(allOrgs[(offset ..< (offset + limit)).clamped(to: allOrgs.startIndex ..< allOrgs.endIndex)])), as: .json)
             return response
         }
+        
+        try app.start()
+        
+        let response: [Org] = try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self)
+        
+        XCTAssertEqual(response.count, 4)
     }
 }
 
