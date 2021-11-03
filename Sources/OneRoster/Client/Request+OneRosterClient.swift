@@ -17,8 +17,8 @@ extension Request {
     ///   and version should be appended, i.e. <https://example.com/oneroster>) or the RESTful base (e.g.
     ///   <https://example.com/oneroster/ims/oneroster/v1p1>). The difference is detected based on the presence or
     ///   absence of the `/ims/oneroster/v1p1` path components at the end of the provided URL. If that suffix is
-    ///   missing, it will be added for all OneRoster requests. **However**, the original provided URL is used for any
-    ///   requests relating to authorization, such as OAuth 2 token grant requests.
+    ///   missing, it will be added for all OneRoster requests. **However**, if the suffix _is_ provided, it is stripped
+    ///   for requests relating to authorization, such as OAuth 2 token grant requests.
     public func oneRoster(baseUrl: URL) -> OneRosterClient {
         return OneRosterClient(baseUrl: baseUrl, client: self.client, logger: self.logger)
     }
@@ -36,17 +36,23 @@ extension Request {
     ///
     /// Indirectly uses the request's default `Client` and `Logger`.
     ///
-    /// - Important: The given base URL is used to construct the OAuth 2 endpoint for making token grant requests,
-    ///   _regardless_ of whether or not it has the OneRoster RESTful API path suffix. See `oneRoster(baseUrl:)` for
-    ///   more details.
+    /// - Important: A base URL is used to construct the OAuth 2 endpoint for making token grant requests, _regardless_
+    ///   of whether or not it has the OneRoster RESTful API path suffix. See `oneRoster(baseUrl:)` for more details.
     public func oauth2OneRoster(
         baseUrl: URL, clientId: String, clientSecret: String,
         scope: String = "https://purl.imsglobal.org/spec/or/v1p1/scope/roster-core.readonly"
     ) -> OneRosterClient {
+        var providerUrl = baseUrl
+        
+        if providerUrl.pathComponents.suffix(3) == ["ims", "oneroster", "v1p1"] {
+            providerUrl.deleteLastPathComponent()
+            providerUrl.deleteLastPathComponent()
+            providerUrl.deleteLastPathComponent()
+        }
         return OneRosterClient(
             baseUrl: baseUrl,
             client: self.oauth2(parameters: { $0.eventLoop.makeSucceededFuture(.init(
-                providerBaseUrl: baseUrl, clientId: clientId, clientSecret: clientSecret, scopes: scope
+                providerBaseUrl: providerUrl, clientId: clientId, clientSecret: clientSecret, scopes: scope
             )) }),
             logger: self.logger
         )
