@@ -70,17 +70,22 @@ public struct OneRosterClient {
         var currentOffset = offset
         var nextUrl = endpoint.makeRequestUrl(from: self.baseUrl, limit: limit, offset: currentOffset, filterString: filter)
         
-        for _ in 0 ..< 10_000 {
+        for n in 0 ..< 10_000 {
             guard let fullUrl = nextUrl else {
                 self.logger.error("[OneRoster] Unable to generate request URL!") // this should really never happen
                 throw Abort(.internalServerError, reason: "Failed to generate OneRoster request URL")
             }
+            self.logger.info("[OneRoster] Starting request \(n + 1)...")
             
             let response = try await self.client.get(.init(string: fullUrl.absoluteString))
             guard response.status == .ok else { throw OneRosterError(from: response) }
             let currentResults = try response.content.decode(T.self).oneRosterDataKey! // already checked that the type has a dataKey
             
             results.append(contentsOf: currentResults)
+            
+            if n == 0, let totalCountHeader = response.headers.first(name: "x-total-count") {
+                self.logger.info("[OneRoster] Server reported a total count: \(totalCountHeader)")
+            }
             
             let links = Dictionary(grouping: (response.headers.links ?? []), by: { $0.relation })
             
