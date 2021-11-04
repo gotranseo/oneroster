@@ -155,7 +155,7 @@ public enum OAuth1 {
             let sigkey = [self.parameters.clientSecret, self.parameters.userSecret ?? ""]
                 .map(\.rfc5849Encoded).joined(separator: "&")
             
-            oauthParams["oauth_signature"] = HMAC<SHA256>.authenticationCode(for: Data(sigbase.utf8), using: .init(data: sigkey.utf8)).base64
+            oauthParams["oauth_signature"] = HMAC<SHA256>.authenticationCode(for: Data(sigbase.utf8), using: .init(data: Data(sigkey.utf8))).base64
             
             // RFC 5849 § 3.5
             return oauthParams
@@ -167,25 +167,19 @@ public enum OAuth1 {
 }
 
 /// Something that is a sequence of contiguous bytes which can be compared to other like sequences.
-public protocol ContiguousComparableData: Comparable, ContiguousBytes, Collection {}
+public protocol ComparableCollection: Comparable, Collection where Element == UInt8 {}
 
-extension ContiguousComparableData where Element == UInt8 {
+extension ComparableCollection {
     public static func ==(lhs: Self, rhs: Self) -> Bool { zip(lhs, rhs).allSatisfy { $0 == $1 } } // Can this optimize to `memcmp()`?
     
     public static func <(lhs: Self, rhs: Self) -> Bool {
         for (l, r) in zip(lhs, rhs) where l != r { return l < r }
         return lhs.count < rhs.count // if we get here, all leading elements are equal, so count decides it
     }
-
-    public func withUnsafeBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
-        try self.withContiguousStorageIfAvailable { try body(.init($0)) } ?? Data(self).withUnsafeBytes(body)
-    }
-    
-    public var regions: [Self] { [self] }
 }
 
-extension String.UTF8View: ContiguousComparableData {}
-extension Substring.UTF8View: ContiguousComparableData {}
+extension String.UTF8View: ComparableCollection {}
+extension Substring.UTF8View: ComparableCollection {}
 
 extension StringProtocol {
     /// Returns the result of encoding `self` using the percent encoding rules specified by RFC 5849 § 3.6,
