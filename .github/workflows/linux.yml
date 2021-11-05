@@ -4,7 +4,7 @@ on: { pull_request: {} }
 jobs:      
   test-queues:
     runs-on: ubuntu-latest
-    container: swiftlang/swift:5.5.1-focal
+    container: swift:5.5.1-focal
     steps: 
       - name: Check out
         uses: actions/checkout@v2
