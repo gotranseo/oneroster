@@ -140,14 +140,14 @@ extension URLComponents {
     ///
     /// The `queryItems` array is created if it is currently `nil`.
     public mutating func appendQueryItem(name: String, value: String? = nil) {
-        self.queryItems = (self.queryItems ?? []) + [.init(name: name, value: value)]
+        self.queryItems = (self.queryItems ?? []) + [URLQueryItem(name: name, value: value)]
     }
 
     /// Add a `URLQueryItem` with the given percent-encoded name and value to the `percentEncodedQueryItems` component.
     ///
     /// The `percentEncodedQueryItems` array is created if it is currently `nil`.
     public mutating func appendPercentEncodedQueryItem(name: String, value: String? = nil) {
-        self.percentEncodedQueryItems = (self.percentEncodedQueryItems ?? []) + [.init(name: name, value: value)]
+        self.percentEncodedQueryItems = (self.percentEncodedQueryItems ?? []) + [URLQueryItem(name: name, value: value)]
     }
 }
 
