@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  Course.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// A Course is a course of study that, typically, has a shared curriculum although it may be taught to different
 /// students by different teachers. It is likely that several classes of a single course may be taught in a term.

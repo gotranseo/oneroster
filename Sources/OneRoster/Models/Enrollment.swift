@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  Enrollment.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// An enrollment is the name given to an individual taking part in a course or class.
 /// In the vast majority of cases, users will be students learning in a class,

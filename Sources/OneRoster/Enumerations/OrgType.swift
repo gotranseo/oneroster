@@ -1,18 +1,22 @@
+//===----------------------------------------------------------------------===//
 //
-//  OrgType.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
-import Foundation
 
 /// The set of permitted tokens for the type of organization.
 /// The explicit hierarchy is: national -> state -> local -> district -> school.
 ///
 /// Note: A 'department' may be inserted below any entity other than national and above any entity other than national and state i.e. national -> state-> department -> local -> department -> district -> department -> school -> department.
 public enum OrgType: String, Codable {
-    
     /// Denotes a department. A department may be a subset in a school or a set of schools. Added in V1.1.
     case department
     

@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  LineItem.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// Line Items are assignments in LIS, they make up the column headings in a gradebook,
 /// and many students will each complete lineItems as they are assessed. It is proposed

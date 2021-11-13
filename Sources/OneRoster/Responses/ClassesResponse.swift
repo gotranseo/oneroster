@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  File.swift
-//  File
+// This source file is part of the OneRoster open source project
 //
-//  Created by James McDermott on 8/24/21.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// See `Class`
 public struct ClassesResponse: Codable, OneRosterResponse {
