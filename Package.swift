@@ -17,7 +17,7 @@ import PackageDescription
 let package = Package(
     name: "OneRoster",
     platforms: [
-       .macOS(.v12)
+        .macOS(.v12),
     ],
     products: [
         .library(name: "OneRoster", targets: ["OneRoster"]),
@@ -34,6 +34,6 @@ let package = Package(
         .testTarget(name: "OneRosterTests", dependencies: [
             .target(name: "OneRoster"),
             .product(name: "XCTVapor", package: "vapor"),
-        ])
+        ]),
     ]
 )
