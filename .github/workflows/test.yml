@@ -27,7 +27,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Run tests
         timeout-minutes: 30
-        run: swift test
+        run: |
+          swift test -Xlinker -rpath \
+                -Xlinker $(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx
 
 #  windows:
 #    runs-on: windows-latest
