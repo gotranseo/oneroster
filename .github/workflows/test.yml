@@ -9,15 +9,15 @@ jobs:
     steps: 
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Run tests
-        timeout-minutes: 30
-        run: swift test
+      #- name: Run tests
+      #  timeout-minutes: 30
+      #  run: swift test
       - name: Verify release build
         timeout-minutes: 30
         run: swift build -c release
   
   macos:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - name: Select latest available Xcode
         uses: maxim-lobanov/setup-xcode@v1
