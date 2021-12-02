@@ -31,8 +31,8 @@ public struct OneRosterClient {
     /// To use OAuth, specify an `OAuth1.Client` or `OAuth2.Client` when creating the `OneRosterClient`.
     public func request<T: OneRosterResponse>(
         _ endpoint: OneRosterAPI.Endpoint, as type: T.Type = T.self, filter: String? = nil
-    ) async throws -> T {
-        self.logger.info("[OneRoster] Start request \(T.self) from \(self.baseUrl) @ \(endpoint.endpoint)")
+    ) async throws -> T.InnerType where T.InnerType: OneRosterBase {
+        self.logger.info("[OneRoster] Start request \(T.InnerType.self) from \(self.baseUrl) @ \(endpoint.endpoint)")
         
         guard let fullUrl = endpoint.makeRequestUrl(from: self.baseUrl, filterString: filter) else {
             self.logger.error("[OneRoster] Unable to generate request URL!") // this should really never happen
@@ -46,16 +46,15 @@ public struct OneRosterClient {
         }
         
         // response content type will be JSON, so the configured default JSON decoder will be used
-        return try response.content.decode(T.self)
+        return try response.content.decode(T.self).oneRosterDataKey
     }
     
-    public func request<T: OneRosterResponse>(
+    /// To use OAuth, specify an `OAuth1.Client` or `OAuth2.Client` when creating the `OneRosterClient`.
+    public func request<T: OneRosterResponse, E>(
         _ endpoint: OneRosterAPI.Endpoint, as type: T.Type = T.self,
          offset: Int = 0, limit: Int = 100, filter: String? = nil
-    ) async throws -> [T.InnerType] {
-        precondition(T.dataKey != nil, "Multiple-item request must be for a type with a data key")
-        
-        self.logger.info("[OneRoster] Start request [\(T.InnerType.self)][\(offset)..<+\(limit)] from \(self.baseUrl) @ \(endpoint.endpoint)")
+    ) async throws -> T.InnerType where T.InnerType == Array<E> {
+        self.logger.info("[OneRoster] Start request \(T.InnerType.self)[\(offset)..<+\(limit)] from \(self.baseUrl) @ \(endpoint.endpoint)")
         
         // OneRoster implementations are not strictly required by the 1.1 spec to provide the `X-Total-Count` response
         // header, nor next/last URLs in the `Link` header (per OneRoster 1.1 v2.0, § 3.4.1). For any given response, we
@@ -73,7 +72,7 @@ public struct OneRosterClient {
         //    caught in a loop caused by faulty results from the implementation (such as sending rel="next" links which
         //    actually point backwards) and return an error.
         // 6. Otherwise, add the limit to the last offset and use the result as the current offset in the next request.
-        var results: [T.InnerType] = []
+        var results: T.InnerType = .init()
         var currentOffset = offset
         var nextUrl = endpoint.makeRequestUrl(from: self.baseUrl, limit: limit, offset: currentOffset, filterString: filter)
         
@@ -86,7 +85,7 @@ public struct OneRosterClient {
             
             let response = try await self.client.get(.init(string: fullUrl.absoluteString))
             guard response.status == .ok else { throw OneRosterError(from: response) }
-            let currentResults = try response.content.decode(T.self).oneRosterDataKey! // already checked that the type has a dataKey
+            let currentResults = try response.content.decode(T.self).oneRosterDataKey // already checked that the type has a dataKey
             
             results.append(contentsOf: currentResults)
             

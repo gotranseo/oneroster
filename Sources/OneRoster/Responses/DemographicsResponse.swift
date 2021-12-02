@@ -13,13 +13,12 @@
 
 /// See `DemographicData`
 public struct DemographicsResponse: Codable, OneRosterResponse {
-    
     /// The inner data type
-    public typealias InnerType = DemographicData
+    public typealias InnerType = [DemographicData]
     
     /// The key for the data
-    public static var dataKey: DataKey? = \.demographics
+    public static var dataKey: DataKey = \.demographics
     
     /// An array of `DemographicData` responses
-    public let demographics: [InnerType]
+    public let demographics: InnerType
 }

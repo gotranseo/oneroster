@@ -16,6 +16,9 @@ public struct TeacherResponse: Codable, OneRosterResponse {
     /// The inner data type
     public typealias InnerType = User
     
+    /// The key for the data
+    public static var dataKey: DataKey = \.user
+    
     /// The `User` response
     public let user: InnerType
 }

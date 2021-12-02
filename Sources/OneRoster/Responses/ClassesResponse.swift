@@ -14,11 +14,11 @@
 /// See `Class`
 public struct ClassesResponse: Codable, OneRosterResponse {
     /// The inner data type
-    public typealias InnerType = Class
+    public typealias InnerType = [Class]
 
     /// The key for the data
-    public static var dataKey: DataKey? = \.classes
+    public static var dataKey: DataKey = \.classes
 
     /// An array of `Course` responses
-    public let classes: [Class]
+    public let classes: InnerType
 }
