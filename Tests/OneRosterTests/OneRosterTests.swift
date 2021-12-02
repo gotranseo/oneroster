@@ -55,12 +55,41 @@ final class OneRosterTests: XCTestCase {
         XCTAssertEqual(headerString, expectedHeaderString)
     }
     
+    func testSingleObjectRequest() throws {
+        let app = Application(.testing)
+        
+        defer { app.shutdown() }
+        app.get("ims", "oneroster", "v1p1", "orgs", ":id") { req -> OrgResponse in
+            let id = try req.parameters.require("id")
+            
+            guard id == "1" else {
+                throw Abort(.notFound)
+            }
+            
+            let org = Org(sourcedId: "1", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "A", type: .district, identifier: nil, parent: nil, children: nil)
+            
+            return OrgResponse(org: org)
+        }
+        
+        try app.start()
+        
+        let response = try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getOrg(id: "1"), as: OrgResponse.self) }.wait()
+        
+        XCTAssertEqual(response.sourcedId, "1")
+
+        XCTAssertThrowsError(try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getOrg(id: "2"), as: OrgResponse.self) }.wait())
+        {
+            guard let error = $0 as? OneRosterError else { return XCTFail("Expected OneRosterError(.notFound) but got \($0)") }
+            XCTAssertEqual(error.status, .notFound)
+        }
+    }
+    
     func testMultiObjectRequest() throws {
         let app = Application(.testing)
         
         defer { app.shutdown() }
-        app.get("ims", "oneroster", "v1p1", "orgs") { (req: Request) -> Response in
-            let allOrgs: [OrgsResponse.InnerType] = [
+        app.get("ims", "oneroster", "v1p1", "orgs") { req -> Response in
+            let allOrgs: OrgsResponse.InnerType = [
                 .init(sourcedId: "1", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "A", type: .district, identifier: nil, parent: nil, children: nil),
                 .init(sourcedId: "2", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "B", type: .district, identifier: nil, parent: nil, children: nil),
                 .init(sourcedId: "3", status: .active, dateLastModified: "\(Date())", metadata: nil, name: "C", type: .district, identifier: nil, parent: nil, children: nil),
@@ -95,12 +124,13 @@ final class OneRosterTests: XCTestCase {
         
         try app.start()
         
-        let response: [Org] = try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self) }.wait()
+        let response = try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self) }.wait()
         
         XCTAssertEqual(response.count, 4)
     }
 }
 
+extension OrgResponse: Content {}
 extension OrgsResponse: Content {}
 
 let isLoggingConfigured: Bool = {
