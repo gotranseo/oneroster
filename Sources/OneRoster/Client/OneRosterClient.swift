@@ -153,9 +153,31 @@ extension URLComponents {
     /// Add a `URLQueryItem` with the given percent-encoded name and value to the `percentEncodedQueryItems` component.
     ///
     /// The `percentEncodedQueryItems` array is created if it is currently `nil`.
-//    public mutating func appendPercentEncodedQueryItem(name: String, value: String? = nil) {
-//        self.percentEncodedQueryItems = (self.percentEncodedQueryItems ?? []) + [URLQueryItem(name: name, value: value)]
-//    }
+    public mutating func appendPercentEncodedQueryItem(name: String, value: String? = nil) {
+        self.percentEncodedQueryItems = (self.percentEncodedQueryItems ?? []) + [URLQueryItem(name: name, value: value)]
+    }
+
+#if os(Linux) && swift(<5.6)
+    public var percentEncodedQueryItems: [URLQueryItem]? {
+        get {
+            guard let percentEncodedQuery = self.percentEncodedQuery else {
+                return nil
+            }
+            // Since the query string is already percent-encoded, we don't have to do anything fancy to
+            // parse it out; surprisingly, and conveniently, simple string splitting is plenty.
+            return percentEncodedQuery.split(separator: "&", maxSplits: .max, omittingEmptySubsequences: true).map {
+                $0.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            }.map {
+                URLQueryItem(name: String($0[0]), value: $0.last.map(String.init))
+            }
+        }
+        set {
+            // Since the individual items are already percent-encoded, we can do simple joins to construct
+            // the query string. Again, surprisingly convenient.
+            self.percentEncodedQuery = newValue?.map { i in i.value.map { "\(i.name)=\($0)" } ?? i.name }.joined(separator: "&")
+        }
+    }
+#endif
 }
 
 extension OneRosterAPI.Endpoint {
@@ -175,8 +197,8 @@ extension OneRosterAPI.Endpoint {
         if let offset = offset {
             components.appendQueryItem(name: "offset", value: "\(offset)")
         }
-        if let filterString = filterString, let encoded = filterString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) {
-            components.appendQueryItem(name: "filter", value: encoded)
+        if let filterString = filterString {
+            components.appendPercentEncodedQueryItem(name: "filter", value: filterString)
         }
         
         guard var paramUrl = components.url else {
