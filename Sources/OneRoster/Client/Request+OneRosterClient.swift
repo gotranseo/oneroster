@@ -1,13 +1,20 @@
+//===----------------------------------------------------------------------===//
 //
-//  Request+OneRosterClient.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Created by Jimmy McDermott on 4/10/20.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 import Foundation
 import Vapor
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension Request {
     /// Get a `OneRosterClient` suitable for making OneRoster requests to the given base URL without authentication.
     ///

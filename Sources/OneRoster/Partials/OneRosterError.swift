@@ -1,12 +1,18 @@
+//===----------------------------------------------------------------------===//
 //
-//  OneRosterError.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Created by Jimmy McDermott on 5/25/19.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
-import Foundation
 import Vapor
+import NIOHTTP1
 
 public struct OneRosterErrorPayload: Codable {
     /// CodeMajor - specifies success or failure

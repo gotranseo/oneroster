@@ -1,0 +1,57 @@
+#!/usr/bin/env jq
+##===----------------------------------------------------------------------===##
+##
+## This source file is part of the OneRoster open source project
+##
+## Copyright (c) 2021 the OneRoster project authors
+## Licensed under Apache License v2.0
+##
+## See LICENSE.txt for license information
+##
+## SPDX-License-Identifier: Apache-2.0
+##
+##===----------------------------------------------------------------------===##
+# Note: The logic which loads this JSON file strips lines beginning with #.
+
+{
+    "header": [
+        "===----------------------------------------------------------------------===",
+        "",
+        " This source file is part of the OneRoster open source project",
+        "",
+        " Copyright (c) YEARS the OneRoster project authors",
+        " Licensed under Apache License v2.0",
+        "",
+        " See LICENSE.txt for license information",
+        "",
+        " SPDX-License-Identifier: Apache-2.0",
+        "",
+        "===----------------------------------------------------------------------==="
+    ],
+    "languages": {
+        "swift-manifest": {
+            "match_expression": ["-name", "Package.swift"],
+            "has_shebang": true,
+            "marker": "//"
+        },
+        "swift-or-c": {
+            "match_expression": [
+                "(", "-iname", "*.swift", "-and", "-not", "-name", "Package.swift", ")",
+                "-or", "-iname", "*.c", "-or", "-iname", "*.h"
+            ],
+            "has_shebang": false,
+            "marker": "//"
+        },
+        "shell": {
+            "match_expression": ["-iname", "*.sh", "-or", "-name", "spdx_header_rules.json"],
+            "has_shebang": true,
+            "marker": "##"
+#       },
+#       "header rules example: {
+#           "match_expression": ["-path", "*/scripts/header example ?.*"],
+#           "has_shebang": false,
+#           "marker_prefix_top": "/*", "marker_suffix_top": "*",
+#           "marker_prefix": " *", "marker_suffix_bottom": "*/"
+        }
+    }
+}

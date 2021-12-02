@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  StringyBoolean.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Created by Jimmy McDermott on 5/25/19.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 extension KeyedDecodingContainer where K: CodingKey {
     func stringBoolean(forKey key: KeyedDecodingContainer<K>.Key) throws -> Bool {

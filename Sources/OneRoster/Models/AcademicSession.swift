@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  AcademicSession.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// AcademicSession represent durations of time. Typically they are used to describe terms, grading periods, and other durations e.g. school years.
 /// Term is used to describe a period of time during which learning will take place. Other words for term could be in common use around the world e.g.

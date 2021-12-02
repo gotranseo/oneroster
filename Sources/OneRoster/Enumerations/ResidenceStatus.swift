@@ -1,17 +1,19 @@
+//===----------------------------------------------------------------------===//
 //
-//  ResidenceStatus.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// Defines the student's residence status.
 /// Based on https://ceds.ed.gov/CEDSElementDetails.aspx?TermxTopicId=20863
-public enum ResidenceStatus: String, Codable {
-    
+public enum ResidenceStatus: String, Codable {    
     /// Resident of administrative unit and usual school attendance area
     case usualSchoolAttendanceArea = "01652"
     

@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  Class.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// A class is an instance of a course, onto which students and teachers are enrolled.
 /// A class is typically held within a term.

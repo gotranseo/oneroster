@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  User.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// Users, Teachers and Students are human beings that are teaching or studying in a class respectively.
 /// LIS represents these with Person. For the case of binding, it is proposed that a single User class

@@ -1,8 +1,22 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the OneRoster open source project
+//
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 import Vapor
 import XCTest
 import XCTVapor
 @testable import OneRoster
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 final class OneRosterTests: XCTestCase {
     func testEndpointRequestUrls() throws {
         XCTAssertEqual(OneRosterAPI.Endpoint.getAllOrgs.makeRequestUrl(from: .init(string: "https://test.com")!)?.absoluteString, "https://test.com/ims/oneroster/v1p1/orgs")
@@ -34,7 +48,7 @@ final class OneRosterTests: XCTestCase {
         XCTAssertEqual(headerString, expectedHeaderString)
     }
     
-    func testMultiObjectRequest() async throws {
+    func testMultiObjectRequest() throws {
         let app = Application(.testing)
         
         defer { app.shutdown() }
@@ -74,7 +88,7 @@ final class OneRosterTests: XCTestCase {
         
         try app.start()
         
-        let response: [Org] = try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self)
+        let response: [Org] = try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self) }.wait()
         
         XCTAssertEqual(response.count, 4)
     }

@@ -1,11 +1,15 @@
+//===----------------------------------------------------------------------===//
 //
-//  LineItemCategory.swift
-//  OneRoster
+// This source file is part of the OneRoster open source project
 //
-//  Copyright Slate Solutions, Inc 2019.
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
 //
-
-import Foundation
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 /// A Category is the name given to a grouping of line items.
 /// (Line Items being equivalent to assignments which students will complete).

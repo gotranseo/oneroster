@@ -1,10 +1,23 @@
 // swift-tools-version:5.5
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the OneRoster open source project
+//
+// Copyright (c) 2021 the OneRoster project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 import PackageDescription
 
 let package = Package(
     name: "OneRoster",
     platforms: [
-       .macOS(.v12)
+        .macOS(.v11),
     ],
     products: [
         .library(name: "OneRoster", targets: ["OneRoster"]),
@@ -21,6 +34,6 @@ let package = Package(
         .testTarget(name: "OneRosterTests", dependencies: [
             .target(name: "OneRoster"),
             .product(name: "XCTVapor", package: "vapor"),
-        ])
+        ]),
     ]
 )
