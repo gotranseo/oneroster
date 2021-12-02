@@ -16,6 +16,7 @@ import XCTest
 import XCTVapor
 @testable import OneRoster
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 final class OneRosterTests: XCTestCase {
     func testEndpointRequestUrls() throws {
         XCTAssertEqual(OneRosterAPI.Endpoint.getAllOrgs.makeRequestUrl(from: .init(string: "https://test.com")!)?.absoluteString, "https://test.com/ims/oneroster/v1p1/orgs")

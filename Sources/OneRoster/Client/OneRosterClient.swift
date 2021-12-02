@@ -16,6 +16,7 @@ import Crypto
 import Vapor
 import Logging
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 public struct OneRosterClient {
     public let baseUrl: URL
     public let client: Client
@@ -38,7 +39,7 @@ public struct OneRosterClient {
             throw Abort(.internalServerError, reason: "Failed to generate OneRoster request URL")
         }
         
-        let response = try await self.client.get(.init(string: fullUrl.absoluteString))
+        let response = try await self.client.get(.init(string: fullUrl.absoluteString)).get()
         
         guard response.status == .ok else {
             throw OneRosterError(from: response)
@@ -83,7 +84,7 @@ public struct OneRosterClient {
             }
             self.logger.info("[OneRoster] Starting request \(n + 1)...")
             
-            let response = try await self.client.get(.init(string: fullUrl.absoluteString))
+            let response = try await self.client.get(.init(string: fullUrl.absoluteString)).get()
             guard response.status == .ok else { throw OneRosterError(from: response) }
             let currentResults = try response.content.decode(T.self).oneRosterDataKey! // already checked that the type has a dataKey
             

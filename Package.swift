@@ -17,7 +17,7 @@ import PackageDescription
 let package = Package(
     name: "OneRoster",
     platforms: [
-        .macOS(.v12),
+        .macOS(.v11),
     ],
     products: [
         .library(name: "OneRoster", targets: ["OneRoster"]),

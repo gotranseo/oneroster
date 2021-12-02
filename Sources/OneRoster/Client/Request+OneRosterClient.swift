@@ -14,6 +14,7 @@
 import Foundation
 import Vapor
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension Request {
     /// Get a `OneRosterClient` suitable for making OneRoster requests to the given base URL without authentication.
     ///
