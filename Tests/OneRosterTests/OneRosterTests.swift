@@ -48,7 +48,7 @@ final class OneRosterTests: XCTestCase {
         XCTAssertEqual(headerString, expectedHeaderString)
     }
     
-    func testMultiObjectRequest() async throws {
+    func testMultiObjectRequest() throws {
         let app = Application(.testing)
         
         defer { app.shutdown() }
@@ -88,7 +88,7 @@ final class OneRosterTests: XCTestCase {
         
         try app.start()
         
-        let response: [Org] = try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self)
+        let response: [Org] = try app.eventLoopGroup.performWithTask { try await app.oneRoster(baseUrl: .init(string: "http://localhost:8080")!).request(.getAllOrgs, as: OrgsResponse.self) }.wait()
         
         XCTAssertEqual(response.count, 4)
     }
