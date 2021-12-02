@@ -8,63 +8,39 @@ OneRoster is a standard developed by IMS Global that specifies how technology pr
 
 ## Installation 
 
-OneRoster is available through SPM. To install it, simply add the following to your Package.swift file:
+OneRoster is available through SPM. To install it, simply add the following to the `dependencies` array in your `Package.swift` file:
 
-.package(url: "https://github.com/gotranseo/oneroster.git", from: "0.0.1") Don't forget to also add it to dependencies array.
+```swift
+.package(url: "https://github.com/gotranseo/oneroster.git", from: "2.0.0")
+```
 
+Don't forget to also add it to your target's dependencies:
+
+```swift
+.product(name: "OneRoster", package: "OneRoster")
+```
 
 ## Usage 
 
-Start by registering the object to your services: 
+To obtain a client for making OneRoster endpoint requests, call `Application.oneRoster(baseURL:)` or `Request.oneRoster(baseURL:)`. If you are calling a server which requires OAuth 1 authorization, use, the `.oauth1OneRoster(baseURL:clientId:clientSecret:)` method. For an OAuth 2 server, use `.oauth2OneRoster(baseURL:clientId:clientSecret:)`:
 
 ```swift
-services.register { container -> OneRosterClient 
-    return OneRosterClient(client: try container.make())
-}
+let imsURL = URL(string: "https://ims-server-here/")!
+let noAuthClient = req.oneRoster(baseURL: imsURL)
+let oauth1Client = req.oauth1OneRoster(baseURL: imsURL, clientId: "my-client-id", clientSecret: "my-client-secret")
+let oauth2Client = req.oauth2OneRoster(baseURL: imsURL, clientId: "my-client-id", clientSecret: "my-client-secret")
 ```
 
-Then, inside of a controller: 
+Due to the way OneRoster's API is specified, we are forced to have two different request methods: `.request(_:as:filter:)` for requesting single entities, and `request(_:as:offset:limit:filter:)` for requesting arrays of entities. For example, to call the `getAllSchools` endpoint:
 
 ```swift
-let client = try req.make(OneRosterClient.self)
+let data = try client.request(.getAllSchools, as: OneRoster.SchoolsResponse.self, limit: 100, offset: 0)
 ```
 
-Due to the way OneRoster has their API spec we are forced to have two different request method, `requestMultiple` and `requestSingle`. If you are fetching an array of entities, like `getAllSchools`, do this:
+To call a single-entity endpoint, such as `getSchool`:
 
 ```swift
-let data = try client.requestMultiple(baseUrl: "ims-url-here",
-                                      clientId: "my-client-id",
-                                      clientSecret: "my-client-secret",
-                                      endpoint: .getAllSchools,
-                                      limit: 100,
-                                      offset: 0,
-                                      decoding: OneRoster.SchoolsResponse.self)
+let school = try client.request(.getSchool(id: "1"), as: OneRoster.SchoolResponse.self)
 ```
 
-By default, the function will go through and recursively query all objects. You can disable this by setting the `bypassRecursion` flag: 
-
-```swift
-let data = try client.requestMultiple(baseUrl: "ims-url-here",
-                                      clientId: "my-client-id",
-                                      clientSecret: "my-client-secret",
-                                      endpoint: .getAllSchools,
-                                      limit: 100,
-                                      offset: 0,
-                                      decoding: OneRoster.SchoolsResponse.self,
-                                      bypassRecursion: true)
-```
-
-If you just want a single model, do the following: 
-
-```swift
-let school = try client.requestSingle(baseUrl: "ims-url-here",
-                                      clientId: "my-client-id",
-                                      clientSecret: "my-client-secret",
-                                      endpoint: .getSchool(id: "1"))
-
-```
-
-The library handles all of the OAuth 1.0 grossness for you so that you can focus on building cool Ed-Tech stuff. Enjoy! 
-
-## Copyright
-Copyright Slate Solutions, Inc.
+Enjoy! 
