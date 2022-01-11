@@ -16,6 +16,9 @@ public struct SchoolResponse: Codable, OneRosterResponse {
     /// The inner data type
     public typealias InnerType = Org
     
+    /// The key for the data
+    public static var dataKey: DataKey = \.org
+    
     /// The `Org` response
-    public let org: InnerType
+    public let org: Org
 }

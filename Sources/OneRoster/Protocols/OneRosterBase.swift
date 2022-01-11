@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 /// Represents the base model that all OneRoster entities inherit from
-public protocol OneRosterBase {
+public protocol OneRosterBase: OneRosterResponseData {
     /// For example: 9877728989-ABF-0001
     var sourcedId: String { get set }
     

@@ -16,6 +16,9 @@ public struct EnrollmentResponse: Codable, OneRosterResponse {
     /// The inner data type
     public typealias InnerType = Enrollment
     
+    /// The key for the data
+    public static var dataKey: DataKey = \.enrollment
+    
     /// The `Enrollment` response
     public let enrollment: InnerType
 }

@@ -65,6 +65,85 @@ public enum OAuth1 {
             self.nonce = nonce
         }
     }
+    
+    /// Generate an OAuth signature and parameter set.
+    ///
+    /// See `generateSignature(for:method:body:using:)` below for important details.
+    internal static func generateSignature(
+        for request: URI,
+        method: HTTPMethod,
+        body: ByteBuffer? = nil,
+        using parameters: Parameters
+    ) -> String {
+        guard let url = URL(string: request.string) else {
+            fatalError("A Vapor.URI can't be parsed as a Foundation.URL, this is a pretty bad thing: \(request)")
+        }
+        return Self.generateSignature(for: url, method: method, body: body, using: parameters)
+    }
+    
+    /// Calculate the OAuth parameter set and signature for a given request URL, content, and method using the given
+    /// parameters. Return the calculated parameter set, including the signature, as a combined string suitable for
+    /// inclusion in an `Authorization` header using the `OAuth` type.
+    ///
+    /// - Warning: Does not correctly handle url-encoded form request bodies as RFC 5849 § 3.4.1.3.1 requires.
+    ///
+    /// - Note: `internal` rather than `fileprivate` for the benefit of tests. Ensuure `SWIFT_DETERMINISTIC_HASHING` is
+    ///   set in the test environment to guarantee reproducible ordering of the parameter set.
+    internal static func generateSignature(
+        for request: URL,
+        method: HTTPMethod,
+        body: ByteBuffer? = nil,
+        using parameters: Parameters
+    ) -> String {
+        guard let parts = URLComponents(url: request, resolvingAgainstBaseURL: true) else {
+            fatalError("A URL can't be parsed into its components, this is a pretty bad thing: \(request)")
+        }
+
+        // RFC 5849 § 3.3
+        let timestamp = UInt64((parameters.timestamp ?? Date()).timeIntervalSince1970)
+        let nonce = parameters.nonce ?? UUID().uuidString
+        
+        // RFC 5849 § 3.1
+        var oauthParams = [
+            "oauth_consumer_key": parameters.clientId,
+            "oauth_signature_method": parameters.signatureMethod.rawValue,
+            "oauth_timestamp": "\(timestamp)",
+            "oauth_nonce": nonce,
+            "oauth_version": "1.0",
+            "oauth_token": parameters.userKey
+        ].compactMapValues { $0 }
+
+        // RFC 5849 § 3.4.1.3.1
+        let rawParams = oauthParams.map { $0 } + (parts.queryItems ?? []).map { ($0.name, $0.value ?? "") }
+        // RFC 5849 § 3.4.1.3.2
+        let encodedParams = rawParams.map { (name: $0.rfc5849Encoded, value: $1.rfc5849Encoded) }
+        let sortedParams = encodedParams.sorted {
+            if $0.name.utf8 != $1.name.utf8 {
+                return $0.name.utf8 < $1.name.utf8
+            } else {
+                return $0.value.utf8 < $1.value.utf8
+            }
+        }
+        let allParams = sortedParams.map { "\($0)=\($1)" }.joined(separator: "&")
+
+        // RFC 5849 § 3.4.1.1
+        let signatureBase = [method.rawValue, parts.rfc5849BaseString ?? "", allParams]
+            .map(\.rfc5849Encoded).joined(separator: "&")
+        
+        // RFC 5849 $ 3.4.2
+        let signatureKey = [parameters.clientSecret, parameters.userSecret ?? ""]
+            .map(\.rfc5849Encoded).joined(separator: "&")
+        
+        oauthParams["oauth_signature"] = Data(HMAC<SHA256>.authenticationCode(
+            for: Data(signatureBase.utf8),
+            using: .init(data: Data(signatureKey.utf8))
+        )).base64EncodedString()
+        
+        // RFC 5849 § 3.5
+        return oauthParams
+            .map { "\($0.rfc5849Encoded)=\"\($1.rfc5849Encoded)\"" }
+            .joined(separator: ", ")
+    }
 
     /// An implementation of Vapor's `Client` protocol which applies OAuth 1-based authorization to all outgoing
     /// requests automatically.
@@ -114,65 +193,18 @@ public enum OAuth1 {
         public func send(_ request: ClientRequest) -> EventLoopFuture<ClientResponse> {
             var finalRequest = request
             
-            // Allow requests to override automatic OAuth authorization (but then why use an OAuth client at all, though?)
+            // Allow requests to override automatic OAuth authorization.
             if !finalRequest.headers.contains(name: .authorization) {
-                finalRequest.headers.replaceOrAdd(name: .authorization, value: "OAuth \(self.generateAuthorizationHeader(for: request))")
+                let signature = OAuth1.generateSignature(for: request.url, method: request.method, body: request.body, using: self.parameters)
+
+                finalRequest.headers.replaceOrAdd(name: .authorization, value: "OAuth \(signature)")
             }
             return self.client.send(finalRequest)
-        }
-        
-        /// Calculate the OAuth parameter set and signature for a request based on the configured parameters and
-        /// request content. Return the result as the content part of an OAuth authorization header.
-        ///
-        /// - Warning: Does not correctly handle url-encoded form request bodies as RFC 5849 § 3.4.1.3.1 requires.
-        ///
-        /// - Note: `internal` rather than `private` for the benefit of tests.
-        internal func generateAuthorizationHeader(for request: ClientRequest) -> String {
-            guard let parts = URLComponents(string: request.url.string) else {
-                fatalError("A Vapor.URI can't be parsed as a Foundation.URL, this is a pretty bad thing: \(request.url)")
-            }
-
-            // RFC 5849 § 3.3
-            let timestamp = UInt64((self.parameters.timestamp ?? Date()).timeIntervalSince1970)
-            let nonce = self.parameters.nonce ?? UUID().uuidString
-            
-            // RFC 5849 § 3.1
-            var oauthParams = [
-                "oauth_consumer_key": self.parameters.clientId,
-                "oauth_signature_method": self.parameters.signatureMethod.rawValue,
-                "oauth_timestamp": "\(timestamp)",
-                "oauth_nonce": nonce,
-                "oauth_version": "1.0",
-                "oauth_token": self.parameters.userKey
-            ].compactMapValues { $0 }
-
-            // RFC 5849 § 3.4.1.3.1
-            let rawParams = (oauthParams.map { $0 } + (parts.queryItems ?? []).map { ($0.name, $0.value ?? "") })
-            // RFC 5849 § 3.4.1.3.2
-            let encodedParams = rawParams.map { (name: $0.rfc5849Encoded, value: $1.rfc5849Encoded) }
-            let sortedParams = encodedParams.sorted { $0.name.utf8 == $1.name.utf8 ? $0.value.utf8 < $1.value.utf8 : $0.name.utf8 < $1.name.utf8 }
-            let allParams = sortedParams.map { "\($0)=\($1)" }.joined(separator: "&")
-
-            // RFC 5849 § 3.4.1.1
-            let sigbase = [request.method.rawValue, parts.baseString ?? "", allParams]
-                .map(\.rfc5849Encoded).joined(separator: "&")
-            
-            // RFC 5849 $ 3.4.2
-            let sigkey = [self.parameters.clientSecret, self.parameters.userSecret ?? ""]
-                .map(\.rfc5849Encoded).joined(separator: "&")
-            
-            oauthParams["oauth_signature"] = HMAC<SHA256>.authenticationCode(for: Data(sigbase.utf8), using: .init(data: Data(sigkey.utf8))).base64
-            
-            // RFC 5849 § 3.5
-            return oauthParams
-                .map { (name: $0.rfc5849Encoded, value: $1.rfc5849Encoded) }
-                .sorted(by: { $0.name.utf8 < $1.name.utf8 })
-                .map { "\($0)=\"\($1)\"" }.joined(separator: ", ")
         }
     }
 }
 
-/// Something that is a sequence of contiguous bytes which can be compared to other like sequences.
+/// Something that is a sequence of individual bytes which can be compared to other like sequences.
 public protocol ComparableCollection: Comparable, Collection where Element == UInt8 {}
 
 extension ComparableCollection {
@@ -198,26 +230,23 @@ extension StringProtocol {
 }
 
 extension URLComponents {
-    /// Returns the result of constructing a URL string from _only_ the scheme, authority, and path components.
-    ///
-    /// - Note: The "authority" includes any specified credentials, and follows the rules of RFC 5849 § 3.4.1.2
-    ///   regarding case normalization and the inclusion of the port number.
-    fileprivate var baseString: String? {
+    /// Returns the result of constructing a URL string from _only_ the scheme, authority, and path components, using
+    /// the semantics specified by RFC 5849 § 3.4.1.2 for case normalization and port number inclusion.
+    fileprivate var rfc5849BaseString: String? {
+        /// This list containly _only_ schemes and ports defined by the RFC. Do not add more entries to it!
+        let knownSchemes: Set<String> = [
+            "http:80",
+            "https:443",
+        ]
+        
         var partial = URLComponents()
         partial.scheme = self.scheme?.lowercased()
         partial.user = self.user
         partial.password = self.password
         partial.host = self.host?.lowercased()
-        partial.port = ((self.port == 80 && partial.scheme == "http") || (self.port == 443 && partial.scheme == "https")) ? nil : self.port
+        partial.port = knownSchemes.contains("\(partial.scheme ?? ""):\(self.port ?? 0)") ? nil : self.port
         partial.path = self.path
         return partial.string
-    }
-}
-
-extension MessageAuthenticationCode {
-    /// Returns the MAC encoded with Base64, as a `String`.
-    fileprivate var base64: String {
-        return Data(self).base64EncodedString()
     }
 }
 
