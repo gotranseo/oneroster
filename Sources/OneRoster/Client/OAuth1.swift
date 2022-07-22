@@ -224,28 +224,27 @@ extension MessageAuthenticationCode {
 extension Application {
     /// Get an `OAuth1Client` suitable for automatically calculating an OAuth 1 signature for each request.
     ///
-    /// Uses the application's default `Client` and `Logger`.
+    /// Uses the application's shared `URLSesssion` client and default `Logger`.
     ///
     /// - Parameters:
     ///   - parameters: A set of OAuth 1 parameters containing the neceessary information (including sensitive
     ///     credentials such as a client secret) for signing requests. Credentials are retained in memory for
     ///     the lifetime of the client, due to the need to reuse them for each request.
     public func oauth1(parameters: OAuth1.Parameters) -> OAuth1.Client {
-        OAuth1.Client(client: self.client, logger: self.logger, parameters: parameters)
+        OAuth1.Client(client: self.sharedUrlSessionClient, logger: self.logger, parameters: parameters)
     }
 }
 
 extension Request {
     /// Get an `OAuth1Client` suitable for automatically calculating an OAuth 1 signature for each request.
     ///
-    /// Uses the request's default `Client` and `Logger`.
+    /// Uses the request's shared `URLSesssion` client and default `Logger`.
     ///
-    /// - Parameters:
     /// - Parameters:
     ///   - parameters: A set of OAuth 1 parameters containing the neceessary information (including sensitive
     ///     credentials such as a client secret) for signing requests. Credentials are retained in memory for
     ///     the lifetime of the client, due to the need to reuse them for each request.
     public func oauth1(parameters: OAuth1.Parameters) -> OAuth1.Client {
-        OAuth1.Client(client: self.client, logger: self.logger, parameters: parameters)
+        OAuth1.Client(client: self.sharedUrlSessionClient, logger: self.logger, parameters: parameters)
     }
 }

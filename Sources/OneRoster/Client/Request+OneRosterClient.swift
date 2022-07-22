@@ -18,7 +18,7 @@ import Vapor
 extension Request {
     /// Get a `OneRosterClient` suitable for making OneRoster requests to the given base URL without authentication.
     ///
-    /// Uses the request's default `Client` and `Logger`.
+    /// Uses the request's shared `URLSesssion` client and default `Logger`.
     ///
     /// - Important: The base URL is allowed to be either a true "base" (the root to which the OneRoster RESTful path
     ///   and version should be appended, i.e. <https://example.com/oneroster>) or the RESTful base (e.g.
@@ -27,7 +27,7 @@ extension Request {
     ///   missing, it will be added for all OneRoster requests. **However**, if the suffix _is_ provided, it is stripped
     ///   for requests relating to authorization, such as OAuth 2 token grant requests.
     public func oneRoster(baseUrl: URL) -> OneRosterClient {
-        return OneRosterClient(baseUrl: baseUrl, client: self.client, logger: self.logger)
+        return OneRosterClient(baseUrl: baseUrl, client: self.sharedUrlSessionClient, logger: self.logger)
     }
     
     /// Get a `OneRosterClient` suitable for making OneRoster requests to the given base URL using OAuth1 authentication
