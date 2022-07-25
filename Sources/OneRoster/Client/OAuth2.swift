@@ -256,7 +256,7 @@ public enum OAuth2 {
 extension Application {
     /// Get an `OAuth2Client` suitable for automatically obtaining access tokens as needed to fulfill each request.
     ///
-    /// Uses the application's default `Client` and `Logger`.
+    /// Uses the application's shared `URLSesssion` client and default `Logger`.
     ///
     /// - Parameters:
     ///   - parameters: A closure which returns a future whose value is a set of OAuth 2 parameters containing the
@@ -265,14 +265,14 @@ extension Application {
     ///     as long as required to make a request for an access token. The closure may return `nil` to indicate that
     ///     the appropriate parameters are no longer available.
     public func oauth2(parameters: @escaping (OAuth2.Client) -> EventLoopFuture<OAuth2.Parameters?>) -> OAuth2.Client {
-        OAuth2.Client(client: self.client, logger: self.logger, parametersCallback: parameters)
+        OAuth2.Client(client: self.sharedUrlSessionClient, logger: self.logger, parametersCallback: parameters)
     }
 }
 
 extension Request {
     /// Get an `OAuth2Client` suitable for automatically obtaining access tokens as needed to fulfill each request.
     ///
-    /// Uses the request's default `Client` and `Logger`.
+    /// Uses the request's shared `URLSesssion` client and default `Logger`.
     ///
     /// - Parameters:
     ///   - parameters: A closure which returns a future whose value is a set of OAuth 2 parameters containing the
@@ -281,6 +281,6 @@ extension Request {
     ///     as long as required to make a request for an access token. The closure may return `nil` to indicate that
     ///     the appropriate parameters are no longer available.
     public func oauth2(parameters: @escaping (OAuth2.Client) -> EventLoopFuture<OAuth2.Parameters?>) -> OAuth2.Client {
-        OAuth2.Client(client: self.client, logger: self.logger, parametersCallback: parameters)
+        OAuth2.Client(client: self.sharedUrlSessionClient, logger: self.logger, parametersCallback: parameters)
     }
 }

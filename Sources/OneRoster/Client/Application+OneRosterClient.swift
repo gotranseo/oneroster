@@ -27,7 +27,7 @@ extension Application {
     ///   missing, it will be added for all OneRoster requests. **However**, if the suffix _is_ provided, it is stripped
     ///   for requests relating to authorization, such as OAuth 2 token grant requests.
     public func oneRoster(baseUrl: URL) -> OneRosterClient {
-        return OneRosterClient(baseUrl: baseUrl, client: self.client, logger: self.logger)
+        return OneRosterClient(baseUrl: baseUrl, client: self.sharedUrlSessionClient, logger: self.logger)
     }
     
     /// Get a `OneRosterClient` suitable for making OneRoster requests to the given base URL using OAuth1 authentication
