@@ -25,7 +25,7 @@ public struct Resource: Codable, OneRosterBase {
     public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
-    public var metadata: [String: String]?
+    public var metadata: [String: String?]?
     
     /// For example: Organic Chemistry
     public var title: String?

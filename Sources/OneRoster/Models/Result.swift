@@ -24,7 +24,7 @@ public struct Result: Codable, OneRosterBase {
     public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
-    public var metadata: [String: String]?
+    public var metadata: [String: String?]?
     
     /// Link to lineItem i.e. the lineItem's 'sourcedId'.
     public var lineItem: GUIDRef

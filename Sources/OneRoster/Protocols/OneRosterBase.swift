@@ -23,5 +23,5 @@ public protocol OneRosterBase {
     var dateLastModified: String { get set }
     
     /// Extra metadata from the OneRoster response
-    var metadata: [String: String]? { get set }
+    var metadata: [String: String?]? { get set }
 }

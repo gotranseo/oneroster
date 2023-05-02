@@ -30,7 +30,7 @@ public struct AcademicSession: Codable, OneRosterBase {
     public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
-    public var metadata: [String: String]?
+    public var metadata: [String: String?]?
     
     /// For example: Spring Term
     public var title: String

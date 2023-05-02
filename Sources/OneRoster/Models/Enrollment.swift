@@ -25,7 +25,7 @@ public struct Enrollment: Codable, OneRosterBase {
     public var dateLastModified: String
     
     /// See `OneRosterBase.metadata`
-    public var metadata: [String: String]?
+    public var metadata: [String: String?]?
     
     /// Link to the enrolled User i.e. a User 'sourcedId'
     public var user: GUIDRef
